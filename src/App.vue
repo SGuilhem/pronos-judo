@@ -1,15 +1,20 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <NavBar v-bind:links="['| Accueil |', '| Compétition en cours |', '| Classement en cours |', '| Archives |']"/>
+  <LandingPage/>
+  <AppFooter/>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import AppFooter from './components/AppFooter.vue'
+import NavBar from './components/NavBar.vue'
+import LandingPage from './components/LandingPage.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    AppFooter,
+    NavBar,
+    LandingPage,
   }
 }
 </script>
@@ -20,7 +25,5 @@ export default {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
 }
 </style>
