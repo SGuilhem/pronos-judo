@@ -1,7 +1,6 @@
 <template>
-  <div class="w-100 flex-col">
-    <h1 class="text-5xl underline text-blue-500 font-bold py-16 pb-8">Interbudo Pronos</h1>
-    <img src="./../static/InterbudoLogo.png" class="m-auto size-48">
+  <div class="w-100 flex-col text-center">
+    <h1 class="text-5xl underline text-blue-500 font-bold lg:py-16 py-8">Interbudo Pronos</h1>
     <h4 class="text-2xl text-center py-5 w-1/2 m-auto">
       Bienvenu sur la page de pronostiques Interbudo!
     </h4>
