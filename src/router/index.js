@@ -1,23 +1,36 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import Vue from 'vue';
+import Router from 'vue-router';
 import LandingPage from '../pages/LandingPage.vue'
+import OnGoingTour from '@/pages/OnGoingTour.vue'
+import { checkAuth } from '@/services/authService';
 
 const routes = [
   {
     path: '/',
     name: 'home',
-    component: LandingPage
+    component: LandingPage,
   },
   {
     path: '/ongoing-tour',
     name: 'ongoing-tour',
+    component: OnGoingTour,
+    /* meta: { requiresAuth: true }, */
+  },
+  {
+    path: '/registration-page',
+    name: 'registration-page',
+    
   },
   {
     path: '/ongoing-result',
     name: 'ongoing-result',
+    /* meta: { requiresAuth: true }, */
   },
   {
     path: '/archives',
     name: 'archives',
+    /* meta: { requiresAuth: true }, */
   }
 ]
 
@@ -26,4 +39,24 @@ const router = createRouter({
   routes
 })
 
-export default router
+router.beforeEach((to, from, next) => {
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      next({ name: 'Login' });
+    } else {
+      checkAuth()
+        .then(() => {
+          next();
+        })
+        .catch(() => {
+          localStorage.removeItem('token');
+          next({ name: 'Login' });
+        });
+    }
+  } else {
+    next();
+  }
+});
+
+export default router;

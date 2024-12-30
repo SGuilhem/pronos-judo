@@ -1,6 +1,6 @@
 <template>
-    <!-- <NavBar/>
-    <AppFooter/> -->
+    <NavBar/>
+    <AppFooter/>
   </template>
   
   <script>
@@ -8,7 +8,7 @@
   import NavBar from './../components/NavBar.vue'
   
   export default {
-    name: 'LandingPage',
+    name: 'OnGoingTour',
     components: {
       AppFooter,
       NavBar,

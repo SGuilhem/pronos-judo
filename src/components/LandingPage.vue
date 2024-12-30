@@ -1,10 +1,10 @@
 <template>
-  <div class="w-100 flex-col text-center">
-    <h1 class="text-5xl underline text-blue-500 font-bold lg:py-16 py-8">Interbudo Pronos</h1>
-    <h4 class="text-2xl text-center py-5 w-1/2 m-auto">
+  <div class="w-full flex-col text-center">
+    <h1 class="lg:text-5xl text-4xl underline text-blue-500 font-bold lg:py-16 py-8">Interbudo Pronos</h1>
+    <h4 class="text-2xl text-center lg:w-1/2 lg:px-0 px-6 m-auto lg:pb-6 pb-0">
       Bienvenu sur la page de pronostiques Interbudo!
     </h4>
-    <div class="py-4 text-lg w-1/2 m-auto">
+    <div class="py-8 text-lg lg:w-1/2 lg:px-0 px-8 m-auto">
       <span>
         Cela fait quelques années que nous avons mis en place un petit rituel
         lors des mondiaux de Judo. <br />
@@ -18,8 +18,7 @@
         joueurs et un grand gagnant était élu!<br />
       </span>
     </div>
-    test
-    <div class="py-4 text-lg w-1/2 m-auto">
+    <div class="py-8 text-lg lg:w-1/2 lg:px-0 px-8 m-auto">
       <span>
         A la base nous utilisions des GoogleDoc et GoogleForm, le
         procédé bien que simple d'utilisation pour tout le monde n'était pas si

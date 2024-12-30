@@ -11,12 +11,18 @@
 export default {
   name: 'NavBar',
   props: {
-    links: [String]
+    links: {
+      type: Array,
+      required: true,
+    },
+    linkRoutes: {
+      type: Object,
+      required: true,
+    },
   },
   methods: {
     toggleMenu() {
       this.$emit('show-menu')
-      console.log("testnavbar")
     }
   }
 }

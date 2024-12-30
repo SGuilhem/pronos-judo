@@ -1,6 +1,6 @@
 <template>
-  <div class="w-100 bg-blue-500 text-white footer">
-    <h4 class="lg:py-2">Guilhem S © 2024</h4>
+  <div class="w-100 bg-blue-500 text-white footer absolute bottom-0">
+    <div class="text-sm">Guilhem S © 2024</div>
   </div>
 </template>
 
@@ -12,11 +12,14 @@ export default {
 
 <style>
 .footer {
+  position: fixed;
   bottom: 0;
+  left: 0;
   width: 100%;
   background-color: #333;
   color: white;
   text-align: center;
+  padding: 10px 0;
 }
 /* @media screen and (max-width: 768px) {
   .footer {
