@@ -13,6 +13,7 @@
       :competitionDays="competitionDays"
       :currentCompetitionDay="currentCompetitionDay"
     />
+    <Archives v-if="isArchives" />
     <!-- <AppFooter/> -->
   </div>
 </template>
@@ -22,6 +23,7 @@ import LandingPage from "./components/LandingPage.vue";
 import SideMenu from "./components/SideMenu.vue";
 import OnGoingTour from "./components/OnGoingTour.vue";
 import OnGoingPredictionsRanking from "./components/OnGoingPredictionsRanking.vue";
+import Archives from "./components/Archives.vue";
 /* import AppFooter from "./components/AppFooter.vue"; */
 
 export default {
@@ -31,6 +33,7 @@ export default {
     OnGoingTour,
     OnGoingPredictionsRanking,
     SideMenu,
+    Archives,
     /* AppFooter */
   },
   computed: {
@@ -42,6 +45,9 @@ export default {
     },
     isOnGoingPredictionsRanking() {
       return this.$route.path === "/ongoing-predictions-ranking";
+    },
+    isArchives() {
+      return this.$route.path === "/archives";
     },
   },
   data() {
@@ -75,7 +81,7 @@ export default {
     var currentDate = new Date();
     function formatDate(date) {
       const day = String(date.getDate()).padStart(2, "0");
-      const month = String(date.getMonth() + 1).padStart(2, "0"); // Les mois commencent à 0
+      const month = String(date.getMonth() + 1).padStart(2, "0");
       const year = date.getFullYear();
 
       return `${day}/${month}/${year}`;

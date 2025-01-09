@@ -3,7 +3,11 @@
     <h1
       class="lg:text-5xl text-4xl underline text-blue-500 font-bold lg:py-16 py-8"
     >
+<<<<<<< HEAD
       Compétition en cours:
+=======
+      Compétition en cours: Paris Grand Slam 2024
+>>>>>>> 9659a01 (Update SideMenu CSS && Update of Archives Function && Update of Women/men select logic)
     </h1>
     <div
       class="lg:text-2xl text-4xl underline text-blue-500 font-bold lg:py-16 py-8"

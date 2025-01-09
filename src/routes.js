@@ -1,3 +1,4 @@
+import OnGoingPredictionsRanking from "./components/OnGoingPredictionsRanking.vue";
 import OnGoingTour from "./pages/OnGoingTour.vue";
 
 const router = new VueRouter({
@@ -8,14 +9,19 @@ const router = new VueRouter({
         component: LandingPage
       },
       {
-        path: '/ongoing-bet',
+        path: '/ongoing-tour',
         name: 'competition-en-cours',
         component: OnGoingTour
       },
       {
-        path: '/ongoing-bet',
+        path: '/ongoing-predictions',
         name: 'competition-en-cours',
-        component: RegistrationPage
+        component: OnGoingPredictionsRanking
+      },
+      {
+        path: '/archives',
+        name: 'archives',
+        component: Archives
       }
     ]
   })

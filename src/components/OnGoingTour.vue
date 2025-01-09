@@ -3,7 +3,7 @@
     <h1
       class="lg:text-5xl text-4xl underline text-blue-500 font-bold lg:py-16 py-8"
     >
-      Compétition en cours:
+      Compétition en cours: Paris Grand Slam 2024
     </h1>
     <div
       class="lg:text-2xl text-4xl underline text-blue-500 font-bold lg:py-16 py-8"
@@ -30,7 +30,7 @@
       <div v-if="selectedDay" class="container">
         <div class="day-title mb-1 mt-8">{{ womenEvent }} & {{ menEvent }}</div>
         <div class="prediction-container my-4">
-          <div class="women-prediction my-3 ml-4 flex align-left">
+          <div :class="`women-prediction mt-5 mb-3 ml-4 flex align-left bold ${isMobile ? 'justify-center text-2xl' : ''}`">
             Pronostiques Femmes:
           </div>
           <div class="pb-2 flex flex-col mt-4 ml-4">
@@ -46,16 +46,14 @@
               </label>
               <select
                 :id="`womenPlace${index}`"
-                :class="`prediction-select text-black px-2 ${
-                  index === 0 ? 'ml-3' : ''
-                } ${isMobile ? 'my-2' : ''}`"
+                :class="`prediction-select text-black px-2 ${!isMobile && index === 0 ? 'ml-3' : ''} ${isMobile ? 'my-2' : ''}`"
                 :disabled="selectedDay < currentCompetitionDay"
                 v-model="select.value"
                 required
               >
-                <option value="" disabled>Choisissez un(e) combattant(e)</option>
+                <option value="" disabled>Choisissez une judoka</option>
                 <option
-                  v-for="(option, optIndex) in getAvailableOptions(index)"
+                  v-for="(option, optIndex) in getWomenAvailableOptions(index)"
                   :key="optIndex"
                   :value="option"
                 >
@@ -64,7 +62,7 @@
               </select>
             </div>
           </div>
-          <div class="men-prediction my-3 ml-4 flex align-left">
+          <div :class="`men-prediction mt-5 mb-3 ml-4 flex align-left bold ${isMobile ? 'justify-center text-2xl' : ''}`">
             Pronostiques Hommes:
           </div>
           <div class="pb-2 flex flex-col mt-4 ml-4">
@@ -80,16 +78,14 @@
               </label>
               <select
                 :id="`menPlace${index}`"
-                :class="`prediction-select text-black px-2 ${
-                  index === 0 ? 'ml-3' : ''
-                } ${isMobile ? 'my-2' : ''}`"
+                :class="`prediction-select text-black px-2 ${!isMobile && index === 0 ? 'ml-3' : ''} ${isMobile ? 'my-2' : ''}`"
                 :disabled="selectedDay < currentCompetitionDay"
                 v-model="select.value"
                 required
               >
-                <option value="" disabled>Choisissez un(e) combattant(e)</option>
+                <option value="" disabled>Choisissez un judoka</option>
                 <option
-                  v-for="(option, optIndex) in select.options"
+                  v-for="(option, optIndex) in getMenAvailableOptions(index)"
                   :key="optIndex"
                   :value="option"
                 >
@@ -275,13 +271,23 @@ export default {
       this.menEvent = this.competitionDays[this.daySelected].events[1];
       console.log("this.daySelected: ", this.daySelected);
     },
-    getAvailableOptions(index) {
+    getWomenAvailableOptions(index) {
       const selectedValues = this.predictions[this.selectedDay].women
         .map((select, i) => (i !== index ? select.value : null))
         .filter((value) => value);
 
 
       return this.predictions[this.selectedDay].women[index].options.filter(
+        (option) => !selectedValues.includes(option)
+      );
+    },
+    getMenAvailableOptions(index) {
+      const selectedValues = this.predictions[this.selectedDay].men
+        .map((select, i) => (i !== index ? select.value : null))
+        .filter((value) => value);
+
+
+      return this.predictions[this.selectedDay].men[index].options.filter(
         (option) => !selectedValues.includes(option)
       );
     },

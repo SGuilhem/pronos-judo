@@ -2,7 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Vue from 'vue';
 import Router from 'vue-router';
 import LandingPage from '../pages/LandingPage.vue'
+import Archives from '../pages/OnGoingTour.vue'
 import OnGoingTour from '@/pages/OnGoingTour.vue'
+import OnGoingPredictionsRanking from '@/components/OnGoingPredictionsRanking.vue';
 import { checkAuth } from '@/services/authService';
 
 const routes = [
@@ -20,16 +22,17 @@ const routes = [
   {
     path: '/registration-page',
     name: 'registration-page',
-    
   },
   {
     path: '/ongoing-result',
     name: 'ongoing-result',
+    component: OnGoingPredictionsRanking,
     /* meta: { requiresAuth: true }, */
   },
   {
     path: '/archives',
     name: 'archives',
+    component: Archives,
     /* meta: { requiresAuth: true }, */
   }
 ]

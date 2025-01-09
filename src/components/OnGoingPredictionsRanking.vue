@@ -3,7 +3,7 @@
     <h1
       class="lg:text-5xl text-4xl underline text-blue-500 font-bold lg:py-16 py-8"
     >
-      Compétition en cours:
+      Compétition en cours: Paris Grand Slam 2024
     </h1>
     <div
       class="lg:text-2xl text-3xl underline text-blue-500 font-bold lg:py-8 py-8"
@@ -18,9 +18,9 @@
           <table class="w-full text-left border-collapse border border-gray-300">
             <thead>
               <tr>
-                <th class="border w-1/8 border-gray-300 px-4 py-2 bg-gray-100">Position</th>
-                <th class="border w-4/8 border-gray-300 px-4 py-2 bg-gray-100">Utilisateur</th>
-                <th class="border w-3/8 border-gray-300 px-4 py-2 bg-gray-100">Points cumulés</th>
+                <th class="border w-1/8 text-base border-gray-300 px-4 py-2 bg-gray-100">Position</th>
+                <th class="border w-4/8 text-base border-gray-300 px-4 py-2 bg-gray-100">Utilisateur</th>
+                <th class="border w-3/8 text-base border-gray-300 px-4 py-2 bg-gray-100">Points cumulés</th>
               </tr>
             </thead>
             <tbody>

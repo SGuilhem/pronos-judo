@@ -1,5 +1,5 @@
 <template>
-  <div class="w-100 bg-blue-500 text-white footer absolute bottom-0">
+  <div class="w-full bg-blue-500 text-white footer absolute bottom-0">
     <div class="text-sm">Guilhem S © 2024</div>
   </div>
 </template>

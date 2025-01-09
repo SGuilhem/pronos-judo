@@ -28,7 +28,7 @@
             <input type="password" class="log-input text-black px-2 self-center" v-model="password" required />
           </div>
           <p v-if="error" class="error text-red-600 pb-2">{{ error }}</p>
-          <button type="submit" class="bg-white text-black border border-gray-300 px-4 py-2 text-sm uppercase shadow hover:bg-gray-100">Connexion</button>
+          <button type="submit" @click="login()" class="bg-white text-black border border-gray-300 px-4 py-2 text-sm uppercase shadow hover:bg-gray-100">Connexion</button>
         </form>
       </div>
       <ul v-if="userLogged" class="text-center flex flex-col font-semibold pt-8">
@@ -44,8 +44,9 @@
       </router-link>
     </div>
   </div>
+
   <!-- Desktop -->
-  <div v-if="!isMobile" class="w-100 bg-blue-500 text-white side-menu-desktop">
+  <div v-if="!toggleMobileMenu" class="w-100 bg-blue-500 text-white side-menu-desktop">
     <div class="align-center container">
       <img src="./../static/InterbudoLogo.png" class="m-auto size-48 py-4">
       <div v-if="userLogged" class="pt-4">
@@ -67,11 +68,16 @@
         </form>
       </div>
       <ul v-if="userLogged" class="text-center flex flex-col font-semibold pt-8">
-        <li class="inline hover:text-gray-200 cell cursor-pointer py-4 underline-offset-4" v-for="link in links" v-bind:key="link"
-          @click="selectLink(link)"
-          :class="{ underline: selectedLink === link }"
-          >{{ link }}</li>
-      </ul>
+    <li
+      class="inline hover:text-gray-200 cell cursor-pointer py-4"
+      v-for="link in links"
+      v-bind:key="link"
+      :class="{ 'underline-gradient' : selectedLink === link }"
+      @click="selectLink(link)"
+    >
+    <span class="underline-text">{{ link }}</span>
+    </li>
+  </ul>
       <button v-if="userLogged" type="submit" class="bg-white text-black border border-gray-300 px-4 py-2 text-sm uppercase shadow hover:bg-gray-100 mt-8" @click="logout">Déconnexion</button>
     </div>
 
@@ -109,11 +115,11 @@ export default {
     return {
       isMobile: null,
       toggleMobileMenu: false,
+      selectedLink: null,
       email: '',
       password: '',
       error: '',
-      userLogged: true,
-      selectedLink: null,
+      userLogged: false,
     };
   },
   methods: {
@@ -127,7 +133,6 @@ export default {
       if (path) {
         if (this.$router) {
           this.$router.push({ path });
-          console.log("path: ", path)
         } else {
           window.location.href = path;
         }
@@ -150,7 +155,7 @@ export default {
 
         if (response.data.token) {
           this.$store.dispatch('login', { token: response.data.token });
-          this.$router.push('/'); 
+          this.$router.push('/');
         } else {
           this.error = 'Informations invalides';
         }
@@ -189,13 +194,20 @@ export default {
   }
 }
 
+
 .side-menu-desktop {
+  @media screen and (min-width: 768px) {
     position: static;
-    height: 100vh;
-    width: 350px;
+    min-height: 100vh;
+    width: 15%;
     color: white;
     text-align: center;
     padding: 20px;
+  }
+
+  @media screen and (max-width: 768px) {
+    display: none;
+  }
 }
 
 .side-menu-mobile {
@@ -224,6 +236,49 @@ export default {
       min-width: 280px;
   }
 }
+
+.underline-gradient {
+  position: relative;
+}
+
+.underline-gradient .underline-text {
+  display: inline-block;
+  position: relative;
+}
+
+.underline-gradient .underline-text::after {
+  content: '';
+  position: absolute;
+  left: -7px;
+  bottom: -3px;
+  width: calc(100% + 14px);
+  height: 3px;
+  background: white;
+  animation: underlineFill 1s ease-in-out forwards;
+}
+
+@keyframes underlineFill {
+  from {
+    width: 0;
+  }
+  to {
+    width: calc(100% + 14px);
+  }
+}
+
+.container {
+  margin-top: 25%;
+  @media screen and (max-width: 768px)  {
+    margin-top: 15%;
+  }
+}
+
+.login-container input {
+  @media screen and (max-width: 768px)  {
+      min-width: 280px;
+  }
+}
+
 
 .cell {
   width: 100%;
