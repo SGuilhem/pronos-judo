@@ -2,11 +2,7 @@
   <div class="w-full flex-col text-center">
     <h1 class="lg:text-5xl text-4xl underline text-blue-500 font-bold lg:py-16 py-8">Interbudo Pronos</h1>
     <h4 class="text-2xl text-center lg:w-1/2 lg:px-0 px-6 m-auto lg:pb-6 pb-0">
-<<<<<<< HEAD
-      Bienvenu sur la page de pronostiques Interbudo!
-=======
       Bienvenue sur la page de pronostiques Interbudo!
->>>>>>> 9659a01 (Update SideMenu CSS && Update of Archives Function && Update of Women/men select logic)
     </h4>
     <div class="py-8 text-lg lg:w-1/2 lg:px-0 px-8 m-auto">
       <span>
