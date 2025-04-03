@@ -28,7 +28,7 @@ const pronosticSchema = new mongoose.Schema({
     },
     predictions: [{
       place: { type: String, enum: ["1st", "2nd", "3rd1", "3rd2"], required: true },
-      name: { type: String, required: true },
+      username: { type: String, required: true },
       type: { type: String, enum: ["men", "women", "team"], required: true } 
     }]
   }],
