@@ -1,54 +1,28 @@
 <template>
   <div class="flex flex-col lg:flex-row">
     <SideMenu :links="links" :linkRoutes="linkRoutes" />
-    <LandingPage v-if="isHomePage" />
-    <OnGoingTour
-      v-if="isOnGoingTour"
-      :competitionDays="competitionDays"
-      :currentCompetitionDay="currentCompetitionDay"
-      :currentFormattedDate="currentFormattedDate"
+    <router-view
+      v-bind="{
+        ...(currentRouteName !== 'register' && {
+          competitionDays,
+          currentCompetitionDay,
+          currentFormattedDate,
+        }),
+      }"
     />
-    <OnGoingPredictionsRanking
-      v-if="isOnGoingPredictionsRanking"
-      :competitionDays="competitionDays"
-      :currentCompetitionDay="currentCompetitionDay"
-    />
-    <Archives v-if="isArchives" />
-    <!-- <AppFooter/> -->
+    <!-- <AppFooter /> -->
   </div>
 </template>
 
 <script>
-import LandingPage from "./components/LandingPage.vue";
 import SideMenu from "./components/SideMenu.vue";
-import OnGoingTour from "./components/OnGoingTour.vue";
-import OnGoingPredictionsRanking from "./components/OnGoingPredictionsRanking.vue";
-import Archives from "./components/Archives.vue";
 /* import AppFooter from "./components/AppFooter.vue"; */
 
 export default {
   name: "App",
   components: {
-    LandingPage,
-    OnGoingTour,
-    OnGoingPredictionsRanking,
     SideMenu,
-    Archives,
     /* AppFooter */
-  },
-  computed: {
-    isHomePage() {
-      return this.$route.path === "/" || this.$route.path === "/home";
-    },
-    isOnGoingTour() {
-      return this.$route.path === "/ongoing-tour";
-    },
-    isOnGoingPredictionsRanking() {
-      return this.$route.path === "/ongoing-predictions-ranking";
-    },
-    isArchives() {
-      return this.$route.path === "/archives";
-    },
   },
   data() {
     return {
@@ -59,7 +33,7 @@ export default {
         "Archives",
       ],
       linkRoutes: {
-        Accueil: "/home",
+        Accueil: "/",
         "Compétition en cours": "/ongoing-tour",
         "Classement en cours": "/ongoing-predictions-ranking",
         Archives: "/archives",
@@ -78,6 +52,10 @@ export default {
     };
   },
   mounted() {
+    this.$nextTick(() => {
+      console.log("Route name:", this.$route?.name);
+    });
+    
     var currentDate = new Date();
     function formatDate(date) {
       const day = String(date.getDate()).padStart(2, "0");
@@ -87,11 +65,16 @@ export default {
       return `${day}/${month}/${year}`;
     }
 
-    this.currentFormattedDate = formatDate(currentDate);
+    this.currentFormattedDate = Number(formatDate(currentDate));
   },
   methods: {
     setcurrentCompetitionDay(day) {
       this.currentCompetitionDay = day;
+    },
+  },
+  computed: {
+    currentRouteName() {
+      return this.$route ? this.$route.name : "";
     },
   },
 };

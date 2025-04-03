@@ -249,13 +249,11 @@ export default {
           ],
         },
       },
-      isValidForm: false,
     };
   },
   mounted() {
     this.checkMobile();
     window.addEventListener("resize", this.checkMobile);
-    console.log("currentCompetitionDay: ", this.currentCompetitionDay);
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.checkMobile);
@@ -269,7 +267,6 @@ export default {
       this.daySelected = day - 1;
       this.womenEvent = this.competitionDays[this.daySelected].events[0];
       this.menEvent = this.competitionDays[this.daySelected].events[1];
-      console.log("this.daySelected: ", this.daySelected);
     },
     getWomenAvailableOptions(index) {
       const selectedValues = this.predictions[this.selectedDay].women

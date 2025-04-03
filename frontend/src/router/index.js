@@ -1,65 +1,41 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import Vue from 'vue';
-import Router from 'vue-router';
-import LandingPage from '../pages/LandingPage.vue'
-import Archives from '../pages/OnGoingTour.vue'
-import OnGoingTour from '@/pages/OnGoingTour.vue'
-import OnGoingPredictionsRanking from '@/components/OnGoingPredictionsRanking.vue';
-import { checkAuth } from '@/services/authService';
+import { createRouter, createWebHistory } from "vue-router";
+import LandingPage from "../components/LandingPage";
+import OnGoingTour from "../components/OnGoingTour";
+import OnGoingPredictionsRanking from "../components/OnGoingPredictionsRanking";
+import Archives from "../components/Archives";
+import Register from "../components/Register"
 
 const routes = [
   {
-    path: '/',
-    name: 'home',
+    path: "/",
+    name: "LandingPage",
     component: LandingPage,
   },
   {
-    path: '/ongoing-tour',
-    name: 'ongoing-tour',
+    path: "/ongoing-tour",
+    name: "ongoing-tour",
     component: OnGoingTour,
-    /* meta: { requiresAuth: true }, */
   },
   {
-    path: '/registration-page',
-    name: 'registration-page',
-  },
-  {
-    path: '/ongoing-result',
-    name: 'ongoing-result',
+    path: "/ongoing-predictions-ranking",
+    name: "ongoing-predictions-ranking",
     component: OnGoingPredictionsRanking,
-    /* meta: { requiresAuth: true }, */
   },
   {
-    path: '/archives',
-    name: 'archives',
+    path: "/archives",
+    name: "archives",
     component: Archives,
-    /* meta: { requiresAuth: true }, */
-  }
-]
+  },
+  {
+    path: "/register",
+    name: "register",
+    component: Register,
+  },
+];
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
-  routes
-})
-
-router.beforeEach((to, from, next) => {
-  if (to.matched.some(record => record.meta.requiresAuth)) {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      next({ name: 'Login' });
-    } else {
-      checkAuth()
-        .then(() => {
-          next();
-        })
-        .catch(() => {
-          localStorage.removeItem('token');
-          next({ name: 'Login' });
-        });
-    }
-  } else {
-    next();
-  }
+  routes,
 });
 
 export default router;

@@ -4,7 +4,7 @@ import OnGoingTour from "./pages/OnGoingTour.vue";
 const router = new VueRouter({
     routes: [
       {
-        path: '/home' || '/',
+        path: '/',
         name: 'home',
         component: LandingPage
       },

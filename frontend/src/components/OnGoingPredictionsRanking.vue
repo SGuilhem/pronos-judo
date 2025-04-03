@@ -26,7 +26,7 @@
             <tbody>
               <tr v-for="(user, index) in leaderboard" :key="index">
                 <td class="border w-1/8 border-gray-300 px-4 py-2">{{ index + 1 }}</td>
-                <td class="border w-4/8 border-gray-300 px-4 py-2">{{ user.name }}</td>
+                <td class="border w-4/8 border-gray-300 px-4 py-2">{{ user.username }}</td>
                 <td class="border w-3/8 border-gray-300 px-4 py-2">{{ user.points }} pts</td>
               </tr>
             </tbody>
@@ -55,13 +55,13 @@ export default {
       menEvent: null,
       womenEvent: null,
       leaderboard: [
-        { name: "Alice", points: 120 },
-        { name: "Bob", points: 110 },
-        { name: "Alex", points: 105 },
-        { name: "Diana", points: 100 },
-        { name: "Tom", points: 95 },
-        { name: "Clara", points: 90 },
-        { name: "George", points: 85 },
+        { username: "Alice", points: 120 },
+        { username: "Bob", points: 110 },
+        { username: "Alex", points: 105 },
+        { username: "Diana", points: 100 },
+        { username: "Tom", points: 95 },
+        { username: "Clara", points: 90 },
+        { username: "George", points: 85 },
       ],
     };
   },
