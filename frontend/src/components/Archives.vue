@@ -1,6 +1,6 @@
 <template>
   <div class="lg:w-full flex-col text-center">
-    <h1 class="lg:text-5xl text-4xl underline text-blue-500 font-bold lg:py-16 py-8">Interbudo Pronos</h1>
+    <h1 class="lg:text-5xl text-4xl underline custom-blue font-bold lg:py-16 py-8">Interbudo Pronos</h1>
     <h4 class="text-2xl text-center lg:w-1/2 lg:px-0 px-6 m-auto lg:pb-6 pb-0">
       Ici seront archivés les précédents pronostiques qui auront eu lieu:
     </h4>
@@ -113,5 +113,8 @@ export default {
   @media screen and (min-width: 768px) {
     padding: 10px
   }
+}
+.custom-blue {
+  color: #2d508e
 }
 </style>

@@ -1,6 +1,10 @@
 <template>
   <div class="w-full flex-col text-center">
-    <h1 class="lg:text-5xl text-4xl underline text-blue-500 font-bold lg:py-16 py-8">Interbudo Pronos</h1>
+    <h1
+      class="lg:text-5xl text-4xl underline custom-blue font-bold lg:py-16 py-8"
+    >
+      Interbudo Pronos
+    </h1>
     <h4 class="text-2xl text-center lg:w-1/2 lg:px-0 px-6 m-auto lg:pb-6 pb-0">
       Bienvenue sur la page de pronostiques Interbudo!
     </h4>
@@ -20,11 +24,11 @@
     </div>
     <div class="py-8 text-lg lg:w-1/2 lg:px-0 px-8 m-auto">
       <span>
-        A la base nous utilisions des GoogleDoc et GoogleForm, le
-        procédé bien que simple d'utilisation pour tout le monde n'était pas si
-        simple en définitive! Surtout pour suivre le classement au jour le jour
-        ou bien pour le compte des points finaux!
-        Je me suis dit que ça pourrait être pas mal de faire un support qui automatise tout! A vos pronos!
+        A la base nous utilisions des GoogleDoc et GoogleForm, le procédé bien
+        que simple d'utilisation pour tout le monde n'était pas si simple en
+        définitive! Surtout pour suivre le classement au jour le jour ou bien
+        pour le compte des points finaux! Je me suis dit que ça pourrait être
+        pas mal de faire un support qui automatise tout! A vos pronos!
       </span>
     </div>
   </div>
@@ -36,4 +40,8 @@ export default {
 };
 </script>
 
-<style></style>
+<style>
+.custom-blue {
+  color: #2d508e;
+}
+</style>

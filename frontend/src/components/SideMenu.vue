@@ -1,9 +1,9 @@
 <template>
   <!-- Responsive Hamburger Menu -->
-  <div class="hamburger bg-blue-500 text-white z-10">
+  <div class="hamburger custom-bg-blue text-white z-10">
     <button @click="toggleMenu">
       <img
-        src="@/static/svg/hamburger.svg"
+        src="./../static/svg/hamburger.svg"
         alt="Menu"
         class="w-16 h-16 p-3 align-left"
       />
@@ -13,14 +13,14 @@
   <!-- Mobile -->
   <div
     v-show="isMobile && toggleMobileMenu"
-    class="bg-blue-500 text-white side-menu-mobile"
+    class="custom-bg-blue text-white side-menu-mobile"
   >
     <button
       @click="closeMenu"
       class="absolute top-4 right-4 z-50 text-white text-xl"
     >
       <img
-        src="@/static/svg/cross-close.svg"
+        src="./../static/svg/cross-close.svg"
         alt="Menu"
         class="w-12 h-12 text-right"
       />
@@ -101,7 +101,7 @@
   <!-- Desktop -->
   <div
     v-show="!isMobile && !toggleMobileMenu"
-    class="bg-blue-500 text-white side-menu-desktop"
+    class="custom-bg-blue text-white side-menu-desktop"
   >
     <div class="align-center container">
       <img src="./../static/InterbudoLogo.png" class="m-auto size-48 py-4" />
@@ -390,5 +390,11 @@ export default {
   @media screen and (max-width: 768px) {
     width: 60%;
   }
+}
+.custom-blue {
+  color: #2d508e
+}
+.custom-bg-blue {
+  background-color: #2d508e
 }
 </style>

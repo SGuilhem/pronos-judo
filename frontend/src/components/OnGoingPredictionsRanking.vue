@@ -1,12 +1,12 @@
 <template>
   <div class="w-full flex-col text-center">
     <h1
-      class="lg:text-5xl text-4xl underline text-blue-500 font-bold lg:py-16 py-8"
+      class="lg:text-5xl text-4xl underline custom-blue font-bold lg:py-16 py-8"
     >
       Compétition en cours: Paris Grand Slam 2024
     </h1>
     <div
-      class="lg:text-2xl text-3xl underline text-blue-500 font-bold lg:py-8 py-8"
+      class="lg:text-2xl text-3xl underline custom-blue font-bold lg:py-8 py-8"
     >
       En cours - Jour {{ currentCompetitionDay }}:
       {{ this.competitionDays[this.currentCompetitionDay - 1].events[0] }} &
@@ -99,5 +99,8 @@ input {
   @media screen and (max-width: 768px) {
     max-width: 300px;
   }
+}
+.custom-blue {
+  color: #2d508e
 }
 </style>

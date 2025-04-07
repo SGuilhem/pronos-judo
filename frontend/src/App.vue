@@ -47,7 +47,7 @@ export default {
         { day: 6, date: "15/12/2024", events: ["Women -78kg", "Men -100kg"] },
         { day: 7, date: "16/12/2024", events: ["Women +78kg", "Men +100kg"] },
       ],
-      currentCompetitionDay: 3,
+      currentCompetitionDay: 5,
       currentFormattedDate: null,
     };
   },
