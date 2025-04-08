@@ -3,19 +3,26 @@
     <h1
       class="lg:text-5xl text-4xl underline text-blue-500 font-bold lg:py-16 py-8"
     >
-      Compétition en cours: Paris Grand Slam 2024
+      {{ competitionName }}
     </h1>
+    <div>
     <div
       class="lg:text-2xl text-4xl underline text-blue-500 font-bold lg:py-16 py-8"
     >
-      En cours - Jour {{ currentCompetitionDay }}:
-      {{ competitionDays[currentCompetitionDay - 1].events[0] }} &
-      {{ competitionDays[currentCompetitionDay - 1].events[1] }}
+      <template v-if="currentCompetitionDay && competitionDays[currentCompetitionDay - 1]">
+        En cours - Jour {{ currentCompetitionDay }} :
+        {{ competitionDays[currentCompetitionDay - 1].events[0] }} &
+        {{ competitionDays[currentCompetitionDay - 1].events[1] }}
+      </template>
+      <template v-else>
+        Début le {{ formattedStartingDay }}
+      </template>
     </div>
+  </div>
 
     <div class="text-2xl text-center lg:w-1/2 lg:px-0 px-6 m-auto lg:pb-6 pb-0">
       <div class="button-container mb-4">
-        <button
+        <!-- <button
           v-for="day in days"
           :key="day"
           :class="[
@@ -28,27 +35,43 @@
         >
           Jour {{ day }}
         </button>
+      </div> -->
+        <button
+          v-for="day in days"
+          :key="day"
+          :class="[
+            'btn p-2 mr-1 mb-1',
+            selectedDay === day ? 'bg-blue-500' : '',
+          ]"
+          @click="selectDay(day)"
+        >
+          Jour {{ day }}
+        </button>
       </div>
       <div v-if="selectedDay" class="container">
         <div class="day-title mb-1 mt-8">{{ womenEvent }} & {{ menEvent }}</div>
 
-        
         <div v-if="loading" class="my-4 p-4 text-center">
           <p>Chargement des données en cours...</p>
         </div>
-        
+
         <div v-else-if="error" class="my-4 p-4 text-center text-red-500">
           <p>{{ error }}</p>
-          <button class="btn my-2 px-4 py-1" @click="loadCompetitorsData(selectedDay)">
+          <button
+            class="btn my-2 px-4 py-1"
+            @click="loadCompetitorsData(selectedDay)"
+          >
             Réessayer
           </button>
         </div>
-        
+
         <div v-else class="prediction-container my-4">
           <div class="text-sm text-gray-600 mt-2">
-          {{ predictions[selectedDay].women[0].options.length }} judokas femmes et 
-          {{ predictions[selectedDay].men[0].options.length }} judokas hommes disponibles
-        </div>
+            {{ predictions[selectedDay].women[0].options.length }} judokas
+            femmes et
+            {{ predictions[selectedDay].men[0].options.length }} judokas hommes
+            disponibles
+          </div>
           <div
             class="women-prediction mt-5 mb-3 ml-4 flex align-left bold"
             :class="{ 'justify-center text-2xl': isMobile }"
@@ -150,8 +173,20 @@ export default {
       type: Number,
       required: true,
     },
+    competitionId: {
+      type: Number,
+      required: true,
+    },
     currentFormattedDate: {
       type: Number,
+      required: true,
+    },
+    competitionName: {
+      type: String,
+      required: true,
+    },
+    formattedStartingDay: {
+      type: String,
       required: true,
     },
   },
@@ -263,7 +298,6 @@ export default {
         },
       },
       apiBaseUrl: "https://data.ijf.org/api/get_json",
-      competitionId: 2958,
       loading: false,
       categoryMapping: {
         1: { men: 1, women: 8 }, // Jour 1 : Hommes -60kg, Femmes -48kg
@@ -295,31 +329,35 @@ export default {
     },
     async loadCompetitorsData(day) {
       if (!day || !this.categoryMapping[day]) return;
-      
+
       this.loading = true;
       this.error = null;
-      
-      try {
-      const menCategoryId = this.categoryMapping[day].men;
-      const womenCategoryId = this.categoryMapping[day].women;
 
       try {
-        const [menData, womenData] = await Promise.all([
-          this.fetchCompetitors(menCategoryId),
-          this.fetchCompetitors(womenCategoryId),
-        ]);
+        const menCategoryId = this.categoryMapping[day].men;
+        const womenCategoryId = this.categoryMapping[day].women;
 
-        this.processCompetitorsData(day, "men", menData);
-        this.processCompetitorsData(day, "women", womenData);
-      }catch (error) {
-        console.error(`Erreur lors du chargement des données pour le jour ${day}:`, error);
-        this.error = `Impossible de charger les données: ${error.message}`;
-      } finally {
-        this.loading = false;
-      }
+        try {
+          const [menData, womenData] = await Promise.all([
+            this.fetchCompetitors(menCategoryId),
+            this.fetchCompetitors(womenCategoryId),
+          ]);
+
+          this.processCompetitorsData(day, "men", menData);
+          this.processCompetitorsData(day, "women", womenData);
+        } catch (error) {
+          console.error(
+            `Erreur lors du chargement des données pour le jour ${day}:`,
+            error
+          );
+          this.error = `Impossible de charger les données: ${error.message}`;
+        } finally {
+          this.loading = false;
+        }
       } catch (error) {
         console.error("Erreur lors du chargement des données:", error);
-        this.error = "Une erreur s'est produite lors du chargement des données.";
+        this.error =
+          "Une erreur s'est produite lors du chargement des données.";
       }
       this.loading = false;
     },
@@ -342,19 +380,27 @@ export default {
       const categoryData = data.categories?.[genderKey]?.[weightId];
 
       if (!categoryData || !categoryData.persons) {
+        console.error(`Données invalides pour ${gender} jour ${day}`);
         return;
       }
-
-      const competitors = Object.values(categoryData.persons).map((person) => {
-        const family = person.family_name || "";
-        const given = person.given_name || "";
-        const country = person.country_short || "";
-        return `${family.toUpperCase()} ${given} (${country})`;
-      });
-
+      const competitors = Object.values(categoryData.persons)
+        .sort(
+          (a, b) =>
+            (a.ranking_place || Infinity) - (b.ranking_place || Infinity)
+        )
+        .map((person) => {
+          const family = person.family_name || "";
+          const given = person.given_name || "";
+          const country = person.country_short || "";
+          return `${family.toUpperCase()} ${given} (${country})`;
+        });
       this.predictions[day][gender].forEach((select) => {
         select.options = competitors;
       });
+
+      console.log(
+        `Chargé ${competitors.length} combattants triés pour ${gender} jour ${day}`
+      );
     },
     getMenAvailableOptions(index) {
       const selectedValues = this.predictions[this.selectedDay].men

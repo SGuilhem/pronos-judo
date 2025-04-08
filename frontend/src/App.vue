@@ -7,6 +7,9 @@
           competitionDays,
           currentCompetitionDay,
           currentFormattedDate,
+          competitionId,
+          competitionName,
+          formattedStartingDay,
         }),
       }"
     />
@@ -16,13 +19,11 @@
 
 <script>
 import SideMenu from "./components/SideMenu.vue";
-/* import AppFooter from "./components/AppFooter.vue"; */
 
 export default {
   name: "App",
   components: {
     SideMenu,
-    /* AppFooter */
   },
   data() {
     return {
@@ -47,44 +48,62 @@ export default {
         { day: 6, date: "15/12/2024", events: ["Women -78kg", "Men -100kg"] },
         { day: 7, date: "16/12/2024", events: ["Women +78kg", "Men +100kg"] },
       ],
-      currentCompetitionDay: 5,
+      competitionId: 2926,
+      currentCompetitionDay: null,
       currentFormattedDate: null,
+      competitionName: null,
+      startingDay: null,
+      formattedStartingDay: null,
     };
   },
   mounted() {
-    this.$nextTick(() => {
-      console.log("Route name:", this.$route?.name);
+    const today = new Date();
+    this.currentFormattedDate = Number(this.formatDate(today));
+
+    this.fetchCompetitionInfos().then(() => {
+      if (!this.startingDay) return;
+
+      const startingDate = new Date(this.startingDay);
+      const diffInMs = today - startingDate;
+      const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+      if (diffInDays >= 0 && diffInDays < this.competitionDays.length) {
+        this.currentCompetitionDay = diffInDays + 1;
+      } else {
+        this.currentCompetitionDay = null;
+      }
     });
-    
-    var currentDate = new Date();
-    function formatDate(date) {
-      const day = String(date.getDate()).padStart(2, "0");
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const year = date.getFullYear();
-
-      return `${day}/${month}/${year}`;
-    }
-
-    this.currentFormattedDate = Number(formatDate(currentDate));
   },
   methods: {
     setcurrentCompetitionDay(day) {
       this.currentCompetitionDay = day;
     },
+    async fetchCompetitionInfos() {
+      try {
+        const response = await fetch(
+          `https://data.ijf.org/api/get_json?params%5Baction%5D=general.get_one&params%5Bmodule%5D=competition&params%5Bid%5D=${this.competitionId}`
+        );
+        const data = await response.json();
+        this.competitionName = data?.title || "Compétition inconnue";
+        this.startingDay = data?.date_from || null;
+        this.formattedStartingDay = this.formatDate(data?.date_from);
+      } catch (error) {
+        console.error("Erreur lors de la récupération de la compétition :", error);
+        this.competitionName = "Erreur lors du chargement";
+      }
+    },
+    formatDate(date) {
+      const parsedDate = typeof date === "string" ? new Date(date) : date;
+      const day = String(parsedDate.getDate()).padStart(2, "0");
+      const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
+      const year = parsedDate.getFullYear();
+      return `${day}/${month}/${year}`;
+    },
   },
   computed: {
     currentRouteName() {
-      return this.$route ? this.$route.name : "";
+      return this.$route?.name || "";
     },
   },
 };
 </script>
-
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  min-height: 100vh;
-}
-</style>
