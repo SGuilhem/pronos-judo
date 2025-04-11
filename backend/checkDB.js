@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Pronostic = require('./models/Pronostic'); // Vérifie que le chemin est correct
+const Pronostic = require('./models/Pronostic');
 
 mongoose.connect('mongodb+srv://pronosAdmin:d1kBl3cR9I8UHZ0y@cluster0.a76ee.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0');
 

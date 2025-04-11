@@ -5,31 +5,56 @@
     >
       Interbudo Pronos
     </h1>
-    <h4 class="text-2xl text-center lg:w-1/2 lg:px-0 px-6 m-auto lg:pb-6 pb-0">
+    <h4 class="text-2xl text-center lg:w-3/4 lg:px-0 px-6 m-auto lg:pb-4 pb-0 underline">
       Bienvenue sur la page de pronostiques Interbudo!
     </h4>
-    <div class="py-8 text-lg lg:w-1/2 lg:px-0 px-8 m-auto">
+    <div class="pt-2 pb-8 text-lg lg:w-3/4 lg:px-0 px-8 m-auto">
       <span>
-        Cela fait quelques années que nous avons mis en place un petit rituel
-        lors des mondiaux de Judo. <br />
-        En effet avec un petit groupe du cours adultes nous avons pris pour jeu
-        d'y aller de nos pronostiques sur la semaine que dure les mondiaux de
-        judo. <br />
-        Chaque personne donnait au jour le jour son pronostique du Podium de
-        chaque catégories du jour. Selon l'accuité des pronostiques, le jour
-        gagnait tant ou tant de points.<br />
-        A la fin de la semaine nous faisions le compte des points de chaque
-        joueurs et un grand gagnant était élu!<br />
+        Depuis quelques années, au club, un petit jeu s’est installé pendant les
+        Championnats du Monde de Judo. Avec un groupe d’adultes du cours, on
+        s’est pris au jeu des <strong>pronostics quotidiens</strong>, tout au
+        long de la semaine de compétition.<br />
+        Chaque jour, chacun envoyait son <strong>prono du podium</strong> pour
+        les catégories en lice le lendemain. Et selon la justesse des choix, des
+        points étaient attribués. À la fin de la semaine, on faisait les
+        comptes… Et on désignait notre grand gagnant 🏆 !<br />
       </span>
     </div>
-    <div class="py-8 text-lg lg:w-1/2 lg:px-0 px-8 m-auto">
+    <div class="text-lg lg:w-3/4 lg:px-0 px-8 m-auto">
       <span>
-        A la base nous utilisions des GoogleDoc et GoogleForm, le procédé bien
-        que simple d'utilisation pour tout le monde n'était pas si simple en
-        définitive! Surtout pour suivre le classement au jour le jour ou bien
-        pour le compte des points finaux! Je me suis dit que ça pourrait être
-        pas mal de faire un support qui automatise tout! A vos pronos!
+        Au départ, on utilisait Google Docs et Google Forms. Simple, oui… mais
+        pas vraiment optimal pour suivre les scores, voir notre classement en
+        direct ou même faire le cumul des points!<br />
+        C’est pour ça que ce petit site a vu le jour :
+        <strong>
+          Automatiser tout ça et rendre l’expérience plus simple pour tout le
+          monde!</strong
+        >
       </span>
+    </div>
+    <div class="rules-border lg:w-3/4 w-full m-auto my-8 pb-8 lg:px-0 px-4">
+      <h4
+        class="text-2xl text-center lg:w-1/2 m-auto lg:pt-8 pt-2 pb-0"
+      >
+        🎯 Comment ça marche ?
+      </h4>
+      <div class="pt-2 text-lg m-auto">
+        - La veille de chaque journée de compétition, vous serez invités à faire
+        vos pronostics pour les catégories du lendemain. <br />
+        - Vous pourrez les envoyer jusqu’à 8h (heure de Paris) le jour même.
+      </div>
+      <h4
+        class="text-2xl text-center lg:w-1/2 m-auto lg:pt-8 pt-4 pb-0"
+      >
+        🧮 Barème des points :
+      </h4>
+      <div class="pt-2 text-lg lg:w-1/2 m-auto">
+        <div class="text-lg m-auto">
+          - ✅ Un judoka placé à la bonne place : 3 points <br />
+          - ✅ Un judoka présent sur le podium, mais mal placé : 1 point <br />
+          - ❌ Un judoka hors podium : 0 point <br />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -43,5 +68,8 @@ export default {
 <style>
 .custom-blue {
   color: #2d508e;
+}
+.rules-border {
+  border: 10px solid #2d508e;
 }
 </style>

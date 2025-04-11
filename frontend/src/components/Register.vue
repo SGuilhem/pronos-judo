@@ -7,8 +7,48 @@
     <div
       class="register-container bg-gray-200 w-full min-h-screen md:bg-white md:max-w-[400px] md:rounded-lg md:shadow-lg px-10 py-10"
     >
-      <h2 class="text-2xl pb-4">Créer un compte</h2>
-      <form @submit.prevent="register">
+    <h1 v-if="passwordReset" class="text-2xl lg:mt-0 mt-8 pb-4">Réinitialisation du mot de passe</h1>
+    <h1 v-else-if="resetPassword" class="text-2xl lg:mt-0 mt-8 pb-4">Définir un nouveau mot de passe</h1>
+    <h1 v-else class="text-2xl lg:mt-0 mt-8 pb-4">Créer un compte</h1>
+    <form v-if="passwordReset" @submit.prevent="requestPasswordReset">
+      <div class="pb-2">
+        <label for="email" class="text-xl">Votre Email:</label>
+        <input
+          type="email"
+          class="log-input text-black px-2 self-center mt-2 mb-4 text-center"
+          v-model="email"
+          required
+        />
+      </div>
+      <p v-if="error" class="error font-bold text-red-600 pb-2">
+        {{ error }}
+      </p>
+      <button
+        type="submit"
+        class="custom-bg-blue text-white px-4 py-2 rounded-md"
+      >
+        Envoyer le mail de réinitialisation
+      </button>
+      <div v-if="emailSent" class="pb-4 mt-6 font-bold text-green-500">Un mail de réinitialisation de mot de passe vous a été envoyé</div>
+    </form>
+
+    <form v-else-if="resetPassword" @submit.prevent="resetPasswordSubmit">
+      <div class="pb-2">
+        <label for="newPassword" class="text-xl">Nouveau mot de passe:</label>
+        <input
+          type="password"
+          id="newPassword"
+          v-model="newPassword"
+          required
+          class="log-input text-black px-2 self-center mt-2 mb-4 text-center"
+        />
+      </div>
+      <button type="submit" class="custom-bg-blue text-white px-4 py-2 rounded-md">Mettre à jour le mot de passe</button>
+      <p v-if="error" class="error mt-4">{{ error }}</p>
+      <p v-if="success" class="success mt-4 font-bold text-green-500">{{ success }}</p>
+    </form>
+
+    <form v-else @submit.prevent="register">
         <label class="text-xl font-bold pb-10">Nom:</label>
         <input
           class="text-center mt-2 mb-4"
@@ -38,7 +78,7 @@
           {{ success }}
         </p>
         <button
-          class="bg-blue-500 text-white px-4 py-2 rounded-md"
+          class="custom-bg-blue text-white px-4 py-2 rounded-md"
           type="submit"
         >
           S'inscrire
@@ -53,8 +93,49 @@
   <div
     class="register-container bg-gray-200 w-full px-10 py-10"
   >
-    <h2 class="text-2xl pb-4">Créer un compte</h2>
-    <form @submit.prevent="register">
+  <h1 v-if="passwordReset" class="text-2xl pb-4">Réinitialisation du mot de passe</h1>
+  <h1 v-else-if="resetPassword" class="text-2xl pb-4">Définir un nouveau mot de passe</h1>
+  <h1 v-else class="text-2xl pb-4">Créer un compte</h1>
+
+  <form v-if="passwordReset" @submit.prevent="requestPasswordReset">
+      <div class="pb-2 flex flex-col">
+        <label for="email" class="mb-2 text-xl">Votre Email:</label>
+        <input
+          type="email"
+          class="log-input text-black px-2 self-center mt-2 mb-4 text-center"
+          v-model="email"
+          required
+        />
+      </div>
+      <p v-if="error" class="error font-bold text-red-600 pb-2">
+        {{ error }}
+      </p>
+      <button
+        type="submit"
+        class="custom-bg-blue text-white px-4 py-2 rounded-md"
+      >
+        Envoyer le mail de réinitialisation
+      </button>
+      <div v-if="emailSent" class="pb-4 mt-6 font-bold text-green-500">Un mail de réinitialisation de mot de passe vous a été envoyé</div>
+    </form>
+
+    <form v-else-if="resetPassword" @submit.prevent="resetPasswordSubmit">
+      <div class="pb-2 flex flex-col">
+        <label for="newPassword" class="mb-2 text-xl">Nouveau mot de passe:</label>
+        <input
+          type="password"
+          id="newPassword"
+          v-model="newPassword"
+          required
+          class="log-input text-black px-2 self-center mt-2 mb-4 text-center"
+        />
+      </div>
+      <button type="submit" class="custom-bg-blue text-white px-4 py-2 rounded-md">Mettre à jour le mot de passe</button>
+      <p v-if="error" class="error mt-4">{{ error }}</p>
+      <p v-if="success" class="success mt-4 font-bold text-green-500">{{ success }}</p>
+    </form>
+
+    <form v-else @submit.prevent="register">
       <label class="text-xl font-bold pb-10">Nom:</label>
       <input
         class="text-center mt-2 mb-4"
@@ -83,7 +164,7 @@
       <p v-if="success" class="success pb-4 font-bold text-green-500">
         {{ success }}
       </p>
-      <button class="bg-blue-500" type="submit">S'inscrire</button>
+      <button class="custom-bg-blue text-white" type="submit">S'inscrire</button>
     </form>
   </div>
   </div>
@@ -92,6 +173,16 @@
 <script>
 export default {
   name: "Register",
+  props: {
+    passwordReset: {
+      type: Boolean,
+      default: false,
+    },
+    resetPassword: {
+    type: Boolean,
+    default: false,
+  },
+  },
   data() {
     return {
       isMobile: null,
@@ -100,6 +191,9 @@ export default {
       password: "",
       success: "",
       error: "",
+      userLogged: false,
+      userName: "",
+      emailSent: null,
     };
   },
   mounted() {
@@ -108,33 +202,67 @@ export default {
   },
   methods: {
     async register() {
-      try {
-        const response = await this.$axios.post("/api/auth/register", {
-          username: this.username,
-          email: this.email,
-          password: this.password,
-        });
-        if (response.status === 201) {
-          this.success = response.data.message;
-          this.error = "";
-          setTimeout(() => {
-            this.$router.push("/");
-          }, 2000);
-        } else {
-          this.error = response.data.message || "Erreur lors de l’inscription";
-          this.success = "";
-        }
-      } catch (err) {
-        console.error(err);
-        if (err.response && err.response.data && err.response.data.message) {
-          this.error = err.response.data.message;
-        } else {
-          this.error = "Erreur lors de la tentative, réessayer plus tard.";
-        }
+  try {
+    const response = await this.$axios.post("/api/auth/register", {
+      username: this.username,
+      email: this.email,
+      password: this.password,
+    });
+    if (response.data.token) {
+      localStorage.setItem("token", response.data.token);
 
-        this.success = "";
-      }
-    },
+      this.$store.dispatch("login", this.username);
+
+      this.$emit("user-logged-in", this.username);
+
+      this.$router.push("/");
+    } else {
+      this.error = "Erreur lors de l'inscription.";
+      this.success = "";
+    }
+  } catch (err) {
+    console.error("Erreur dans la méthode register :", err);
+    if (err.response && err.response.data && err.response.data.message) {
+      this.error = err.response.data.message;
+    } else {
+      this.error = "Erreur lors de la tentative, veuillez réessayer plus tard.";
+    }
+    this.success = "";
+  }
+},
+async requestPasswordReset() {
+  try {
+    const response = await this.$axios.post("/api/auth/request-password-reset", {
+      email: this.email,
+    });
+    this.success = "Un email de réinitialisation a été envoyé.";
+    this.error = "";
+    this.emailSent = true;
+  } catch (err) {
+    console.error(err);
+    this.error = "Erreur lors de la tentative, veuillez réessayer.";
+    this.success = "";
+  }
+},
+
+async resetPasswordSubmit() {
+  try {
+    const token = this.$route.query.token;
+    const response = await this.$axios.post("/api/auth/reset-password", {
+      token,
+      newPassword: this.newPassword,
+    });
+    this.success = response.data.message;
+    this.error = "";
+    setTimeout(() => {
+        this.$router.push("/");
+      }, 2000);
+  } catch (err) {
+    console.error(err);
+    this.error = "Erreur lors de la réinitialisation du mot de passe.";
+    this.success = "";
+  }
+},
     handleResize() {
       const newIsMobile = window.innerWidth <= 768;
       if (newIsMobile !== this.isMobile) {
@@ -160,5 +288,8 @@ button {
 }
 .error {
   color: red;
+}
+.custom-bg-blue {
+  background-color: #2d508e
 }
 </style>

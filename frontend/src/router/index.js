@@ -27,9 +27,20 @@ const routes = [
     component: Archives,
   },
   {
+    path: "/reset-password",
+    name: "reset-password",
+    component: Register,
+    props: (route) => ({
+      resetPassword: !!route.query.token,
+    }),
+  },
+  {
     path: "/register",
     name: "register",
     component: Register,
+    props: (route) => ({
+      passwordReset: route.query.passwordReset === "true",
+    }),
   },
 ];
 

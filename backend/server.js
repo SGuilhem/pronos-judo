@@ -1,6 +1,5 @@
 require('./models/User');
 require('./models/Pronostic');
-require('./models/Ranking');
 require('dotenv').config();
 
 const express = require('express');
@@ -11,11 +10,11 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/auth");
 const userRoutes = require('./routes/userRoutes');
 const pronosticRoutes = require('./routes/pronosticRoutes');
-const rankingRoutes = require('./routes/rankingRoutes');
+const predictionsRoutes = require('./routes/predictionsRoutes');
+const archivedCompetitionsRoutes = require("./routes/archivedCompetitionsRoutes");
 
 const app = express();
 
-// Connexion à MongoDB
 connectDB();
 
 mongoose.connect(process.env.MONGO_URI)
@@ -29,17 +28,17 @@ app.use(cors({
     credentials: true
 }));
 
-// Logger pour voir les requêtes reçues
+
 app.use((req, res, next) => {
     console.log(`Requête reçue: ${req.method} ${req.url}`);
     next();
 });
 
-// Définition des routes
 app.use("/api/auth", authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/pronostics', pronosticRoutes);
-app.use('/api/rankings', rankingRoutes);
+app.use('/api/predictions', predictionsRoutes);
+app.use("/api/archived-competitions", archivedCompetitionsRoutes);
 
 // Route de test
 app.get('/', (req, res) => {

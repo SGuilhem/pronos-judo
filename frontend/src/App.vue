@@ -10,6 +10,8 @@
           competitionId,
           competitionName,
           formattedStartingDay,
+          formattedEndingDay,
+          competitions,
         }),
       }"
     />
@@ -40,25 +42,27 @@ export default {
         Archives: "/archives",
       },
       competitionDays: [
-        { day: 1, date: "10/12/2024", events: ["Women -48kg", "Men -60kg"] },
-        { day: 2, date: "11/12/2024", events: ["Women -52kg", "Men -66kg"] },
-        { day: 3, date: "12/12/2024", events: ["Women -57kg", "Men -73kg"] },
-        { day: 4, date: "13/12/2024", events: ["Women -63kg", "Men -81kg"] },
-        { day: 5, date: "14/12/2024", events: ["Women -70kg", "Men -90kg"] },
-        { day: 6, date: "15/12/2024", events: ["Women -78kg", "Men -100kg"] },
-        { day: 7, date: "16/12/2024", events: ["Women +78kg", "Men +100kg"] },
+        { day: 1, events: ["Women -48kg", "Men -60kg"] },
+        { day: 2, events: ["Women -52kg", "Men -66kg"] },
+        { day: 3, events: ["Women -57kg", "Men -73kg"] },
+        { day: 4, events: ["Women -63kg", "Men -81kg"] },
+        { day: 5, events: ["Women -70kg", "Men -90kg"] },
+        { day: 6, events: ["Women -78kg", "Men -100kg"] },
+        { day: 7, events: ["Women +78kg", "Men +100kg"] },
       ],
-      competitionId: 2926,
+      competitionId: 2874,
       currentCompetitionDay: null,
-      currentFormattedDate: null,
+      currentFormattedDate: this.formatDate(new Date()),
+      competitions: [],
       competitionName: null,
       startingDay: null,
+      endingDay: null,
       formattedStartingDay: null,
+      formattedEndingDay: null,
     };
   },
   mounted() {
     const today = new Date();
-    this.currentFormattedDate = Number(this.formatDate(today));
 
     this.fetchCompetitionInfos().then(() => {
       if (!this.startingDay) return;
@@ -86,19 +90,24 @@ export default {
         const data = await response.json();
         this.competitionName = data?.title || "Compétition inconnue";
         this.startingDay = data?.date_from || null;
+        this.endingDay = data?.date_to || null;
         this.formattedStartingDay = this.formatDate(data?.date_from);
+        this.formattedEndingDay = this.formatDate(data?.date_to);
       } catch (error) {
-        console.error("Erreur lors de la récupération de la compétition :", error);
+        console.error(
+          "Erreur lors de la récupération de la compétition :",
+          error
+        );
         this.competitionName = "Erreur lors du chargement";
       }
     },
     formatDate(date) {
-      const parsedDate = typeof date === "string" ? new Date(date) : date;
-      const day = String(parsedDate.getDate()).padStart(2, "0");
-      const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
-      const year = parsedDate.getFullYear();
-      return `${day}/${month}/${year}`;
-    },
+  const parsedDate = typeof date === "string" ? new Date(date) : date;
+  const day = String(parsedDate.getDate()).padStart(2, "0");
+  const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
+  const year = parsedDate.getFullYear();
+  return `${day}/${month}/${year}`;
+}
   },
   computed: {
     currentRouteName() {

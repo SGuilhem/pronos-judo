@@ -1,11 +1,12 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
+import { createStore } from "vuex";
+import auth from "./store/modules/auth";
 
-Vue.use(Vuex);
-
-export default new Vuex.Store({
+export default createStore({
   state: {
     user: null,
+  },
+  modules: {
+    auth,
   },
   mutations: {
     setUser(state, user) {
@@ -17,10 +18,10 @@ export default new Vuex.Store({
   },
   actions: {
     login({ commit }, user) {
-      commit('setUser', user);
+      commit("setUser", user);
     },
     logout({ commit }) {
-      commit('logout');
+      commit("logout");
     },
   },
 });

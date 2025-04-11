@@ -1,41 +1,32 @@
 <template>
   <div class="w-full flex-col text-center">
     <h1
-      class="lg:text-5xl text-4xl underline text-blue-500 font-bold lg:py-16 py-8"
+      class="lg:text-5xl text-3xl underline custom-blue font-bold lg:py-16 py-8"
     >
       {{ competitionName }}
     </h1>
     <div>
-    <div
-      class="lg:text-2xl text-4xl underline text-blue-500 font-bold lg:py-16 py-8"
-    >
-      <template v-if="currentCompetitionDay && competitionDays[currentCompetitionDay - 1]">
-        En cours - Jour {{ currentCompetitionDay }} :
-        {{ competitionDays[currentCompetitionDay - 1].events[0] }} &
-        {{ competitionDays[currentCompetitionDay - 1].events[1] }}
-      </template>
-      <template v-else>
-        Début le {{ formattedStartingDay }}
-      </template>
+      <div
+        class="lg:text-3xl text-2xl underline custom-blue font-bold lg:pt-4 lg:pb-8 pb-8 pt-2"
+      >
+        <template
+          v-if="
+            currentCompetitionDay && competitionDays[currentCompetitionDay - 1]
+          "
+        >
+          En cours - Jour {{ currentCompetitionDay }} :
+          {{ competitionDays[currentCompetitionDay - 1].events[0] }} &
+          {{ competitionDays[currentCompetitionDay - 1].events[1] }}
+        </template>
+        <template v-else>
+          Début le {{ formattedStartingDay }} et fin le
+          {{ formattedEndingDay }}</template
+        >
+      </div>
     </div>
-  </div>
 
     <div class="text-2xl text-center lg:w-1/2 lg:px-0 px-6 m-auto lg:pb-6 pb-0">
       <div class="button-container mb-4">
-        <!-- <button
-          v-for="day in days"
-          :key="day"
-          :class="[
-            'btn p-2 mr-1 mb-1',
-            selectedDay === day ? 'bg-blue-500' : '',
-            currentCompetitionDay < day ? 'bg-slate-400' : '',
-          ]"
-          @click="selectDay(day)"
-          :disabled="currentCompetitionDay < day"
-        >
-          Jour {{ day }}
-        </button>
-      </div> -->
         <button
           v-for="day in days"
           :key="day"
@@ -72,11 +63,16 @@
             {{ predictions[selectedDay].men[0].options.length }} judokas hommes
             disponibles
           </div>
+          <div class="text-xl mt-4 underline lg:mx-0 mx-4">
+            🕒 Pronostic ouvert : de la veille jusqu’à 8h (heure de Paris) le
+            jour de la catégorie.
+          </div>
           <div
-            class="women-prediction mt-5 mb-3 ml-4 flex align-left bold"
-            :class="{ 'justify-center text-2xl': isMobile }"
+            :class="`women-prediction text-2xl mt-5 mb-2 ml-5 flex align-left bold underline ${
+              isMobile ? 'justify-center text-2xl' : ''
+            }`"
           >
-            Pronostiques Femmes:
+            Pronostics Femmes:
           </div>
           <div class="pb-2 flex flex-col mt-4 ml-4">
             <div
@@ -84,18 +80,22 @@
               :key="index"
               :class="isMobile ? 'flex flex-col m-auto' : 'flex flex-row my-2'"
             >
-              <label :for="'womenPlace' + index" class="mx-4 text-xl">
+              <label :for="'womenPlace' + index" class="mx-4 text-xl underline">
                 {{ select.label }}
               </label>
               <select
                 :id="'womenPlace' + index"
-                class="prediction-select text-black px-2"
+                class="prediction-select text-black px-2 lg:w-1/2"
                 :class="{
                   'ml-3': !isMobile && index === 0,
                   'my-2': isMobile,
                 }"
                 v-model="select.value"
                 required
+                :disabled="
+                  !isCategoryActive(categoryMapping[selectedDay].women) ||
+                  isCategoryPredicted(categoryMapping[selectedDay].women)
+                "
               >
                 <option value="" disabled>Choisissez une judoka</option>
                 <option
@@ -109,10 +109,11 @@
             </div>
           </div>
           <div
-            class="men-prediction mt-5 mb-3 ml-4 flex align-left bold"
-            :class="{ 'justify-center text-2xl': isMobile }"
+            :class="`men-prediction text-2xl mt-5 mb-2 ml-4 flex align-left bold underline ${
+              isMobile ? 'justify-center text-2xl' : ''
+            }`"
           >
-            Pronostiques Hommes:
+            Pronostics Hommes:
           </div>
           <div class="pb-2 flex flex-col mt-4 ml-4">
             <div
@@ -120,18 +121,22 @@
               :key="index"
               :class="isMobile ? 'flex flex-col m-auto' : 'flex flex-row my-2'"
             >
-              <label :for="'menPlace' + index" class="mx-4 text-xl">
+              <label :for="'menPlace' + index" class="mx-4 text-xl underline">
                 {{ select.label }}
               </label>
               <select
                 :id="'menPlace' + index"
-                class="prediction-select text-black px-2"
+                class="prediction-select text-black px-2 lg:w-1/2"
                 :class="{
                   'ml-3': !isMobile && index === 0,
                   'my-2': isMobile,
                 }"
                 v-model="select.value"
                 required
+                :disabled="
+                  !isCategoryActive(categoryMapping[selectedDay].men) ||
+                  isCategoryPredicted(categoryMapping[selectedDay].men)
+                "
               >
                 <option value="" disabled>Choisissez un judoka</option>
                 <option
@@ -145,16 +150,30 @@
             </div>
           </div>
           <button
-            v-show="selectedDay === currentCompetitionDay"
             :class="[
               'btn my-4 px-4 py-1',
-              isValidForm ? 'bg-blue-500' : 'bg-gray-400',
+              isValidForm && (!predictionSubmitted || hasActiveCategories)
+                ? 'bg-blue-500'
+                : 'bg-gray-400',
             ]"
-            :disabled="!isValidForm"
+            :disabled="
+              !isValidForm || (predictionSubmitted && !hasActiveCategories)
+            "
             @click="validatePrediction"
           >
             Je valide!
           </button>
+          <div
+            v-if="predictionMessage"
+            :class="{
+              'text-green-500': predictionSubmitted,
+              'text-red-500': !predictionSubmitted && !isValidForm,
+              'text-blue-500': !predictionSubmitted && isValidForm,
+            }"
+            class="my-4 lg:mx-0 mx-4"
+          >
+            {{ predictionMessage }}
+          </div>
         </div>
       </div>
     </div>
@@ -186,6 +205,10 @@ export default {
       required: true,
     },
     formattedStartingDay: {
+      type: String,
+      required: true,
+    },
+    formattedEndingDay: {
       type: String,
       required: true,
     },
@@ -300,14 +323,15 @@ export default {
       apiBaseUrl: "https://data.ijf.org/api/get_json",
       loading: false,
       categoryMapping: {
-        1: { men: 1, women: 8 }, // Jour 1 : Hommes -60kg, Femmes -48kg
-        2: { men: 2, women: 9 }, // Jour 2 : Hommes -66kg, Femmes -52kg
-        3: { men: 3, women: 10 }, // Jour 3 : Hommes -73kg, Femmes -57kg
-        4: { men: 4, women: 11 }, // Jour 4 : Hommes -81kg, Femmes -63kg
-        5: { men: 5, women: 12 }, // Jour 5 : Hommes -90kg, Femmes -70kg
-        6: { men: 6, women: 13 }, // Jour 6 : Hommes -100kg, Femmes -78kg
-        7: { men: 7, women: 14 }, // Jour 7 : Hommes +100kg, Femmes +78kg
+        1: { men: 1, women: 8 },
+        2: { men: 2, women: 9 },
+        3: { men: 3, women: 10 },
+        4: { men: 4, women: 11 },
+        5: { men: 5, women: 12 },
+        6: { men: 6, women: 13 },
+        7: { men: 7, women: 14 },
       },
+      predictionSubmitted: false,
     };
   },
   mounted() {
@@ -321,10 +345,48 @@ export default {
     checkMobile() {
       this.isMobile = window.innerWidth <= 768;
     },
-    selectDay(day) {
+    async selectDay(day) {
       this.selectedDay = day;
       this.womenEvent = this.competitionDays[day - 1].events[0];
       this.menEvent = this.competitionDays[day - 1].events[1];
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("Token manquant. Veuillez vous connecter.");
+        return;
+      }
+
+      if (!this.competitionId) {
+        console.error(
+          "competitionId manquant. Impossible de vérifier les prédictions."
+        );
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/predictions/${this.competitionId}/${day}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log(result.message);
+          this.predictionObject = result.prediction;
+          this.predictionSubmitted = true;
+        } else {
+          this.predictionObject = null;
+          this.predictionSubmitted = false;
+        }
+      } catch (error) {
+        console.error("Erreur réseau:", error);
+      }
+
       this.loadCompetitorsData(day);
     },
     async loadCompetitorsData(day) {
@@ -397,10 +459,6 @@ export default {
       this.predictions[day][gender].forEach((select) => {
         select.options = competitors;
       });
-
-      console.log(
-        `Chargé ${competitors.length} combattants triés pour ${gender} jour ${day}`
-      );
     },
     getMenAvailableOptions(index) {
       const selectedValues = this.predictions[this.selectedDay].men
@@ -421,28 +479,184 @@ export default {
         (option) => !selectedValues.includes(option)
       );
     },
-    validatePrediction() {
+    async validatePrediction() {
+      const womenPredictions = this.predictions[this.selectedDay].women.reduce(
+        (acc, select, index) => {
+          const keys = [
+            "FirstPlace",
+            "SecondPlace",
+            "ThirdPlace1",
+            "ThirdPlace2",
+          ];
+          acc[`women${keys[index]}`] = select.value || "";
+          return acc;
+        },
+        {}
+      );
+
+      const menPredictions = this.predictions[this.selectedDay].men.reduce(
+        (acc, select, index) => {
+          const keys = [
+            "FirstPlace",
+            "SecondPlace",
+            "ThirdPlace1",
+            "ThirdPlace2",
+          ];
+          acc[`men${keys[index]}`] = select.value || "";
+          return acc;
+        },
+        {}
+      );
+
       this.predictionObject = {
-        womenFirstPlace: this.predictions[this.selectedDay].women[0].value,
-        womenSecondPlace: this.predictions[this.selectedDay].women[1].value,
-        womenThirdPlace1: this.predictions[this.selectedDay].women[2].value,
-        womenThirdPlace2: this.predictions[this.selectedDay].women[3].value,
-        menFirstPlace: this.predictions[this.selectedDay].men[0].value,
-        menSecondPlace: this.predictions[this.selectedDay].men[1].value,
-        menThirdPlace1: this.predictions[this.selectedDay].men[2].value,
-        menThirdPlace2: this.predictions[this.selectedDay].men[3].value,
+        ...womenPredictions,
+        ...menPredictions,
       };
-      console.log("this.predictionObject: ", this.predictionObject);
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("Token manquant. Veuillez vous connecter.");
+        return;
+      }
+
+      try {
+        const method = this.predictionSubmitted ? "PUT" : "POST";
+        const response = await fetch("http://localhost:5000/api/predictions", {
+          method: method,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            predictions: this.predictionObject,
+            competitionDay: this.selectedDay,
+            competitionId: this.competitionId,
+            date: new Date().toISOString().split("T")[0],
+          }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.warn("Erreur côté backend :", errorText);
+          return;
+        }
+
+        const result = await response.json();
+
+        this.predictionSubmitted = true;
+      } catch (error) {
+        console.error("Erreur réseau :", error);
+      }
+    },
+    isCategoryActive(categoryId) {
+
+      if (this.isCategoryPredicted(categoryId)) {
+        return false;
+      }
+
+      const categorySchedules = {
+        "1,2,8,9": "2025-04-23T08:00:00",
+        "3,10,11": "2025-04-24T08:00:00",
+        "12,4,5": "2025-04-25T08:00:00",
+        "13,14,6,7": "2025-04-26T08:00:00",
+      };
+
+      for (const [categories, endTime] of Object.entries(categorySchedules)) {
+        if (categories.split(",").includes(String(categoryId))) {
+          const endDate = new Date(endTime);
+          const startDate = new Date(endDate);
+          startDate.setDate(endDate.getDate() - 1);
+
+          return now >= startDate && now <= endDate;
+        }
+      }
+
+      return false;
+    },
+    isCategoryPredicted(categoryId) {
+      if (!this.predictionObject || !this.predictionObject.predictions) {
+        return false;
+      }
+
+      const predictions = this.predictionObject.predictions;
+
+      if (categoryId === 4) {
+        return !!predictions.menFirstPlace;
+      }
+      if (categoryId === 5) {
+        return !!predictions.menSecondPlace;
+      }
+      if (categoryId === 6) {
+        return !!predictions.menThirdPlace1;
+      }
+      if (categoryId === 7) {
+        return !!predictions.menThirdPlace2;
+      }
+
+      if (categoryId === 12) {
+        return !!predictions.womenFirstPlace;
+      }
+      if (categoryId === 13) {
+        return !!predictions.womenSecondPlace;
+      }
+      if (categoryId === 14) {
+        return !!predictions.womenThirdPlace1;
+      }
+
+      return false;
     },
   },
   computed: {
-    isValidForm() {
-      return (
-        this.predictions[this.selectedDay]?.women.every(
-          (select) => select.value
-        ) &&
-        this.predictions[this.selectedDay]?.men.every((select) => select.value)
+    hasActiveCategories() {
+      const womenActive = this.predictions[this.selectedDay]?.women.some(
+        (select, index) =>
+          this.isCategoryActive(this.categoryMapping[this.selectedDay].women) &&
+          !this.isCategoryPredicted(
+            this.categoryMapping[this.selectedDay].women
+          )
       );
+
+      const menActive = this.predictions[this.selectedDay]?.men.some(
+        (select, index) =>
+          this.isCategoryActive(this.categoryMapping[this.selectedDay].men) &&
+          !this.isCategoryPredicted(this.categoryMapping[this.selectedDay].men)
+      );
+
+      return womenActive || menActive;
+    },
+    isValidForm() {
+      const womenValid = this.predictions[this.selectedDay]?.women.every(
+        (select, index) =>
+          !this.isCategoryActive(
+            this.categoryMapping[this.selectedDay].women
+          ) ||
+          this.isCategoryPredicted(
+            this.categoryMapping[this.selectedDay].women
+          ) ||
+          select.value
+      );
+
+      const menValid = this.predictions[this.selectedDay]?.men.every(
+        (select, index) =>
+          !this.isCategoryActive(this.categoryMapping[this.selectedDay].men) ||
+          this.isCategoryPredicted(
+            this.categoryMapping[this.selectedDay].men
+          ) ||
+          select.value
+      );
+
+      return womenValid && menValid;
+    },
+    predictionMessage() {
+      if (this.predictionSubmitted) {
+        return "Pronostique déjà effectué pour ce jour.";
+      } else if (!this.isValidForm) {
+        return "Veuillez remplir tous les champs pour valider votre pronostic.";
+      } else if (!this.hasActiveCategories) {
+        return "Les pronostics ne sont pas encore ouverts pour cette catégorie.";
+      } else {
+        return "Vous pouvez soumettre votre pronostic.";
+      }
     },
   },
 };

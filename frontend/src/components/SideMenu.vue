@@ -31,7 +31,7 @@
         <div>Bienvenue</div>
         <div v-if="userName" class="font-bold">{{ userName }}</div>
       </div>
-      <div v-if="!userLogged" class="login-container m-auto">
+      <div v-else class="login-container m-auto">
         <form @submit.prevent="login">
           <div class="pb-2 flex flex-col">
             <label for="email">Email</label>
@@ -42,7 +42,7 @@
               required
             />
           </div>
-          <div class="pb-4 flex flex-col">
+          <div class="pb-1 flex flex-col">
             <label for="password">Password</label>
             <input
               type="password"
@@ -51,7 +51,13 @@
               required
             />
           </div>
-          <p v-if="error" class="error font-bold text-red-600 pb-2">
+          <div
+            class="pb-6 underline cursor-pointer"
+            @click="forgottenPassword()"
+          >
+            Mot de passe oublié?
+          </div>
+          <p v-if="error" class="error font-bold text-red-600 pb-6">
             {{ error }}
           </p>
           <button
@@ -120,7 +126,7 @@
               required
             />
           </div>
-          <div class="pb-4 flex flex-col items-center">
+          <div class="pb-1 flex flex-col items-center">
             <label for="password">Password</label>
             <input
               type="password"
@@ -129,7 +135,13 @@
               required
             />
           </div>
-          <p v-if="error" class="error font-bold text-red-600 pb-2">
+          <div
+            class="pb-6 underline text-sm cursor-pointer"
+            @click="forgottenPassword()"
+          >
+            Mot de passe oublié?
+          </div>
+          <p v-if="error" class="error font-bold text-red-600 pb-6">
             {{ error }}
           </p>
           <button
@@ -206,8 +218,6 @@ export default {
       email: "",
       password: "",
       error: "",
-      userName: "",
-      userLogged: false,
     };
   },
   methods: {
@@ -243,11 +253,12 @@ export default {
 
         if (response.data.token) {
           localStorage.setItem("token", response.data.token);
+
           const decoded = JSON.parse(atob(response.data.token.split(".")[1]));
           localStorage.setItem("userName", decoded.username);
 
-          this.userLogged = true;
-          this.userName = decoded.username;
+          this.$store.dispatch("login", decoded.username);
+
           this.$router.push("/");
         } else {
           this.error = "Informations invalides";
@@ -260,9 +271,11 @@ export default {
     logout() {
       localStorage.removeItem("token");
       localStorage.removeItem("userName");
-      this.userLogged = false;
-      this.userName = "";
+
+      this.$store.dispatch("logout");
+
       this.selectedLink = null;
+
       this.$router.push("/");
     },
     checkLogin() {
@@ -270,15 +283,25 @@ export default {
       const storedUserName = localStorage.getItem("userName");
 
       if (token && storedUserName) {
-        this.userLogged = true;
-        this.userName = storedUserName;
+        this.$store.dispatch("login", storedUserName);
       }
+    },
+    forgottenPassword() {
+      this.$router.push({ name: "register", query: { passwordReset: "true" } });
     },
     handleResize() {
       const newIsMobile = window.innerWidth <= 768;
       if (newIsMobile !== this.isMobile) {
         this.isMobile = newIsMobile;
       }
+    },
+  },
+  computed: {
+    userLogged() {
+      return this.$store.state.auth.userLogged;
+    },
+    userName() {
+      return this.$store.state.auth.userName;
     },
   },
 };
@@ -303,7 +326,7 @@ export default {
     width: 15%;
     color: white;
     text-align: center;
-    padding: 20px
+    padding: 20px;
   }
 
   @media screen and (max-width: 768px) {
@@ -392,9 +415,9 @@ export default {
   }
 }
 .custom-blue {
-  color: #2d508e
+  color: #2d508e;
 }
 .custom-bg-blue {
-  background-color: #2d508e
+  background-color: #2d508e;
 }
 </style>

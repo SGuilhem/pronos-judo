@@ -1,0 +1,177 @@
+const express = require('express');
+const jwt = require('jsonwebtoken');
+const router = express.Router();
+const Prediction = require('../models/Prediction');
+
+// Middleware check token
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ message: 'Token manquant' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ message: 'Token invalide' });
+    }
+    req.user = user;
+    next();
+  });
+}
+
+// POST PREDICTION
+router.post('/', authenticateToken, async (req, res) => {
+  const { predictions, date, competitionDay, competitionId } = req.body;
+  const userId = req.user.userId;
+
+  console.log("Données reçues dans POST :", req.body);
+
+  if (!userId) {
+    return res.status(400).json({ message: 'userId manquant' });
+  }
+
+  try {
+    // Vérifiez si une prédiction existe déjà
+    const existing = await Prediction.findOne({ userId, competitionDay, competitionId });
+
+    if (existing) {
+      return res.status(400).json({ message: 'Prédiction déjà soumise pour ce jour de compétition.' });
+    }
+
+    // Insérez une nouvelle prédiction
+    const newPrediction = new Prediction({ userId, competitionDay, competitionId, date, predictions });
+    await newPrediction.save();
+
+    res.status(201).json({ message: 'Prédiction enregistrée avec succès.' });
+  } catch (err) {
+    console.error("Erreur lors de la sauvegarde de la prédiction :", err);
+    res.status(500).json({ message: 'Erreur lors de la sauvegarde de la prédiction.', error: err.message });
+  }
+});
+
+// PUT PREDICTION (mise à jour d'une prédiction existante)
+router.put('/', authenticateToken, async (req, res) => {
+  const { predictions, date, competitionDay, competitionId } = req.body;
+  const userId = req.user.userId;
+
+  if (!userId) {
+    return res.status(400).json({ message: 'userId manquant' });
+  }
+
+  try {
+    const existing = await Prediction.findOne({ userId, competitionDay, competitionId });
+
+    if (!existing) {
+      return res.status(404).json({ message: 'Aucune prédiction trouvée pour ce jour de compétition.' });
+    }
+
+    // Fusionner les prédictions
+    existing.predictions = mergePredictions(existing.predictions, predictions);
+    existing.date = date || existing.date;
+
+    try {
+      await existing.save();
+      res.status(200).json({ message: 'Prédiction mise à jour avec succès.', prediction: existing });
+    } catch (err) {
+      console.error("Erreur lors de la mise à jour de la prédiction :", err);
+      return res.status(500).json({ message: 'Erreur lors de la mise à jour de la prédiction.' });
+    }
+  } catch (err) {
+    console.error("Erreur lors de la mise à jour de la prédiction :", err);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+});
+
+// GET PREDICTION FOR SPECIFIC USER AND COMPETITION DAY
+  router.get('/:competitionId/:competitionDay', authenticateToken, async (req, res) => {
+    const competitionId = req.params.competitionId;
+    const competitionDay = parseInt(req.params.competitionDay, 10);
+    const userId = req.user.userId;
+  
+    try {
+      const existing = await Prediction.findOne({ userId, competitionId, competitionDay });
+  
+      if (existing) {
+        return res.status(200).json({ message: 'Prédiction déjà effectuée.', prediction: existing });
+      }
+      res.status(404).json({ message: 'Aucune prédiction trouvée.' });
+    } catch (err) {
+      console.error("Erreur lors de la recherche de prédiction :", err);
+      res.status(500).json({ message: 'Erreur serveur' });
+    }
+  });router.get('/:competitionId/:competitionDay', authenticateToken, async (req, res) => {
+    const competitionId = req.params.competitionId;
+    const competitionDay = parseInt(req.params.competitionDay, 10);
+    const userId = req.user.userId;
+  
+    try {
+      const existing = await Prediction.findOne({ userId, competitionId, competitionDay });
+  
+      if (existing) {
+        existing.predictions = normalizePredictions(existing.predictions);
+        return res.status(200).json({ message: 'Prédiction déjà effectuée.', prediction: existing });
+      }
+      res.status(404).json({ message: 'Aucune prédiction trouvée.' });
+    } catch (err) {
+      console.error("Erreur lors de la recherche de prédiction :", err);
+      res.status(500).json({ message: 'Erreur serveur' });
+    }
+  });
+
+// GET ALL PREDICTIONS
+  router.get('/', authenticateToken, async (req, res) => {
+    const { competitionId } = req.query;
+  
+    try {
+      const query = {};
+      if (competitionId) {
+        query.competitionId = competitionId;
+      }
+  
+      const predictions = await Prediction.find(query)
+        .populate('userId', 'username')
+        .exec();
+  
+      const formattedPredictions = predictions.map((prediction) => ({
+        username: prediction.userId.username,
+        competitionDay: prediction.competitionDay,
+        predictions: prediction.predictions,
+      }));
+  
+      res.status(200).json(formattedPredictions);
+    } catch (err) {
+      console.error("Erreur lors de la récupération des prédictions :", err);
+      res.status(500).json({ message: 'Erreur serveur' });
+    }
+  });
+
+  function normalizePredictions(predictions) {
+    return {
+      womenFirstPlace: predictions.womenFirstPlace || "",
+      womenSecondPlace: predictions.womenSecondPlace || "",
+      womenThirdPlace1: predictions.womenThirdPlace1 || "",
+      womenThirdPlace2: predictions.womenThirdPlace2 || "",
+      menFirstPlace: predictions.menFirstPlace || "",
+      menSecondPlace: predictions.menSecondPlace || "",
+      menThirdPlace1: predictions.menThirdPlace1 || "",
+      menThirdPlace2: predictions.menThirdPlace2 || "",
+    };
+  }
+
+  function mergePredictions(existingPredictions, newPredictions) {
+    return {
+      womenFirstPlace: newPredictions.womenFirstPlace || existingPredictions.womenFirstPlace || "",
+      womenSecondPlace: newPredictions.womenSecondPlace || existingPredictions.womenSecondPlace || "",
+      womenThirdPlace1: newPredictions.womenThirdPlace1 || existingPredictions.womenThirdPlace1 || "",
+      womenThirdPlace2: newPredictions.womenThirdPlace2 || existingPredictions.womenThirdPlace2 || "",
+      menFirstPlace: newPredictions.menFirstPlace || existingPredictions.menFirstPlace || "",
+      menSecondPlace: newPredictions.menSecondPlace || existingPredictions.menSecondPlace || "",
+      menThirdPlace1: newPredictions.menThirdPlace1 || existingPredictions.menThirdPlace1 || "",
+      menThirdPlace2: newPredictions.menThirdPlace2 || existingPredictions.menThirdPlace2 || "",
+    };
+  }
+  
+
+module.exports = router;
