@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: pronos-judo-backend
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    healthCheckPath: /
+    envVars:
+      - key: MONGO_URI
+        value: "mongodb+srv://pronosAdmin:d1kBl3cR9I8UHZ0y@cluster0.a76ee.mongodb.net/pronos-judo?retryWrites=true&w=majority&appName=Cluster0"
