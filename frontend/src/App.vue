@@ -50,7 +50,7 @@ export default {
         { day: 6, events: ["Women -78kg", "Men -100kg"] },
         { day: 7, events: ["Women +78kg", "Men +100kg"] },
       ],
-      competitionId: 2874,
+      competitionId: 2926,
       currentCompetitionDay: null,
       currentFormattedDate: this.formatDate(new Date()),
       competitions: [],

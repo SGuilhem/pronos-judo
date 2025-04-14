@@ -4,6 +4,7 @@ import store from './store';
 import './index.css';
 import router from './router';
 import axios from './axios';
+import "./assets/tailwind.css";
 
 const app = createApp(App);
 

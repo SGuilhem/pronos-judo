@@ -152,12 +152,12 @@
           <button
             :class="[
               'btn my-4 px-4 py-1',
-              isValidForm && (!predictionSubmitted || hasActiveCategories)
+              isValidForm && hasActiveCategories
                 ? 'bg-blue-500'
                 : 'bg-gray-400',
             ]"
             :disabled="
-              !isValidForm || (predictionSubmitted && !hasActiveCategories)
+              !isValidForm || !hasActiveCategories
             "
             @click="validatePrediction"
           >
@@ -549,30 +549,30 @@ export default {
       }
     },
     isCategoryActive(categoryId) {
+  const now = new Date("2025-04-22T09:00:00");
+  const categorySchedules = {
+    "1,2,8,9": "2025-04-23T08:00:00",
+    "3,10,11": "2025-04-24T08:00:00",
+    "12,4,5": "2025-04-25T08:00:00",
+    "13,14,6,7": "2025-04-26T08:00:00",
+  };
 
-      if (this.isCategoryPredicted(categoryId)) {
-        return false;
+  for (const [categories, endTime] of Object.entries(categorySchedules)) {
+    if (categories.split(",").includes(String(categoryId))) {
+      const endDate = new Date(endTime);
+      const startDate = new Date(endDate);
+      startDate.setDate(endDate.getDate() - 1);
+      startDate.setHours(8, 0, 0, 0);
+
+      if (now >= startDate && now < endDate) {
+        console.log(`Catégorie ${categoryId} est active.`);
+        return true;
       }
+    }
+  }
 
-      const categorySchedules = {
-        "1,2,8,9": "2025-04-23T08:00:00",
-        "3,10,11": "2025-04-24T08:00:00",
-        "12,4,5": "2025-04-25T08:00:00",
-        "13,14,6,7": "2025-04-26T08:00:00",
-      };
-
-      for (const [categories, endTime] of Object.entries(categorySchedules)) {
-        if (categories.split(",").includes(String(categoryId))) {
-          const endDate = new Date(endTime);
-          const startDate = new Date(endDate);
-          startDate.setDate(endDate.getDate() - 1);
-
-          return now >= startDate && now <= endDate;
-        }
-      }
-
-      return false;
-    },
+  return false;
+},
     isCategoryPredicted(categoryId) {
       if (!this.predictionObject || !this.predictionObject.predictions) {
         return false;

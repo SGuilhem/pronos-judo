@@ -7,48 +7,61 @@
     <div
       class="register-container bg-gray-200 w-full min-h-screen md:bg-white md:max-w-[400px] md:rounded-lg md:shadow-lg px-10 py-10"
     >
-    <h1 v-if="passwordReset" class="text-2xl lg:mt-0 mt-8 pb-4">Réinitialisation du mot de passe</h1>
-    <h1 v-else-if="resetPassword" class="text-2xl lg:mt-0 mt-8 pb-4">Définir un nouveau mot de passe</h1>
-    <h1 v-else class="text-2xl lg:mt-0 mt-8 pb-4">Créer un compte</h1>
-    <form v-if="passwordReset" @submit.prevent="requestPasswordReset">
-      <div class="pb-2">
-        <label for="email" class="text-xl">Votre Email:</label>
-        <input
-          type="email"
-          class="log-input text-black px-2 self-center mt-2 mb-4 text-center"
-          v-model="email"
-          required
-        />
-      </div>
-      <p v-if="error" class="error font-bold text-red-600 pb-2">
-        {{ error }}
-      </p>
-      <button
-        type="submit"
-        class="custom-bg-blue text-white px-4 py-2 rounded-md"
-      >
-        Envoyer le mail de réinitialisation
-      </button>
-      <div v-if="emailSent" class="pb-4 mt-6 font-bold text-green-500">Un mail de réinitialisation de mot de passe vous a été envoyé</div>
-    </form>
+      <h1 v-if="passwordReset" class="text-2xl lg:mt-0 mt-8 pb-4">
+        Réinitialisation du mot de passe
+      </h1>
+      <h1 v-else-if="resetPassword" class="text-2xl lg:mt-0 mt-8 pb-4">
+        Définir un nouveau mot de passe
+      </h1>
+      <h1 v-else class="text-2xl lg:mt-0 mt-8 pb-4">Créer un compte</h1>
+      <form v-if="passwordReset" @submit.prevent="requestPasswordReset">
+        <div class="pb-2">
+          <label for="email" class="text-xl">Votre Email:</label>
+          <input
+            type="email"
+            class="log-input text-black px-2 self-center mt-2 mb-4 text-center"
+            v-model="email"
+            required
+          />
+        </div>
+        <p v-if="error" class="error font-bold text-red-600 pb-2">
+          {{ error }}
+        </p>
+        <button
+          type="submit"
+          class="custom-bg-blue text-white px-4 py-2 rounded-md"
+        >
+          Envoyer le mail de réinitialisation
+        </button>
+        <div v-if="emailSent" class="pb-4 mt-6 font-bold text-green-500">
+          Un mail de réinitialisation de mot de passe vous a été envoyé
+        </div>
+      </form>
 
-    <form v-else-if="resetPassword" @submit.prevent="resetPasswordSubmit">
-      <div class="pb-2">
-        <label for="newPassword" class="text-xl">Nouveau mot de passe:</label>
-        <input
-          type="password"
-          id="newPassword"
-          v-model="newPassword"
-          required
-          class="log-input text-black px-2 self-center mt-2 mb-4 text-center"
-        />
-      </div>
-      <button type="submit" class="custom-bg-blue text-white px-4 py-2 rounded-md">Mettre à jour le mot de passe</button>
-      <p v-if="error" class="error mt-4">{{ error }}</p>
-      <p v-if="success" class="success mt-4 font-bold text-green-500">{{ success }}</p>
-    </form>
+      <form v-else-if="resetPassword" @submit.prevent="resetPasswordSubmit">
+        <div class="pb-2">
+          <label for="newPassword" class="text-xl">Nouveau mot de passe:</label>
+          <input
+            type="password"
+            id="newPassword"
+            v-model="newPassword"
+            required
+            class="log-input text-black px-2 self-center mt-2 mb-4 text-center"
+          />
+        </div>
+        <button
+          type="submit"
+          class="custom-bg-blue text-white px-4 py-2 rounded-md"
+        >
+          Mettre à jour le mot de passe
+        </button>
+        <p v-if="error" class="error mt-4">{{ error }}</p>
+        <p v-if="success" class="success mt-4 font-bold text-green-500">
+          {{ success }}
+        </p>
+      </form>
 
-    <form v-else @submit.prevent="register">
+      <form v-else @submit.prevent="register">
         <label class="text-xl font-bold pb-10">Nom:</label>
         <input
           class="text-center mt-2 mb-4"
@@ -88,85 +101,119 @@
   </div>
 
   <!-- Desktop -->
-  <div 
-    v-if="!isMobile" class="w-full min-h-screen flex items-center justify-center text-center">
   <div
-    class="register-container bg-gray-200 w-full px-10 py-10"
+    v-if="!isMobile"
+    class="w-full min-h-screen flex items-center justify-center text-center"
   >
-  <h1 v-if="passwordReset" class="text-2xl pb-4">Réinitialisation du mot de passe</h1>
-  <h1 v-else-if="resetPassword" class="text-2xl pb-4">Définir un nouveau mot de passe</h1>
-  <h1 v-else class="text-2xl pb-4">Créer un compte</h1>
+    <div class="register-container bg-gray-200 w-full px-10 py-10">
+      <h1 v-if="passwordReset" class="text-2xl pb-4">
+        Réinitialisation du mot de passe
+      </h1>
+      <h1 v-else-if="resetPassword" class="text-2xl pb-4">
+        Définir un nouveau mot de passe
+      </h1>
+      <h1 v-else class="text-2xl pb-4">Créer un compte</h1>
 
-  <form v-if="passwordReset" @submit.prevent="requestPasswordReset">
-      <div class="pb-2 flex flex-col">
-        <label for="email" class="mb-2 text-xl">Votre Email:</label>
+      <form v-if="passwordReset" @submit.prevent="requestPasswordReset">
+        <div class="pb-2 flex flex-col">
+          <label for="email" class="mb-2 text-xl">Votre Email:</label>
+          <input
+            type="email"
+            class="log-input text-black px-2 self-center mt-2 mb-4 text-center"
+            v-model="email"
+            required
+          />
+        </div>
+        <p v-if="error" class="error font-bold text-red-600 pb-2">
+          {{ error }}
+        </p>
+        <button
+          type="submit"
+          class="custom-bg-blue text-white px-4 py-2 rounded-md"
+        >
+          Envoyer le mail de réinitialisation
+        </button>
+        <div v-if="emailSent" class="pb-4 mt-6 font-bold text-green-500">
+          Un mail de réinitialisation de mot de passe vous a été envoyé
+        </div>
+      </form>
+
+      <form v-else-if="resetPassword" @submit.prevent="resetPasswordSubmit">
+  <div class="pb-2 flex flex-col">
+    <label for="newPassword" class="mb-2 font-bold text-xl">Nouveau mot de passe:</label>
+    <input
+      type="password"
+      id="newPassword"
+      v-model="newPassword"
+      required
+      class="log-input text-black px-2 self-center mt-2 mb-4 text-center"
+    />
+  </div>
+  <div class="pb-2 flex flex-col">
+    <label for="confirmNewPassword" class="mb-2 font-bold text-xl">Confirmer le mot de passe:</label>
+    <input
+      type="password"
+      id="confirmNewPassword"
+      v-model="confirmNewPassword"
+      required
+      class="log-input text-black px-2 self-center mt-2 mb-4 text-center"
+    />
+  </div>
+  <button
+    type="submit"
+    class="custom-bg-blue text-white px-4 py-2 rounded-md"
+  >
+    Mettre à jour le mot de passe
+  </button>
+  <p v-if="error" class="error mt-4">{{ error }}</p>
+  <p v-if="success" class="success mt-4 font-bold text-green-500">
+    {{ success }}
+  </p>
+</form>
+
+      <form v-else @submit.prevent="register">
+        <label class="text-xl font-bold pb-10">Nom:</label>
         <input
+          class="text-center mt-2 mb-4"
+          type="text"
+          v-model="username"
+          required
+        />
+
+        <label class="text-xl font-bold pb-10">Email:</label>
+        <input
+          class="text-center mt-2 mb-4"
           type="email"
-          class="log-input text-black px-2 self-center mt-2 mb-4 text-center"
           v-model="email"
           required
         />
-      </div>
-      <p v-if="error" class="error font-bold text-red-600 pb-2">
-        {{ error }}
-      </p>
-      <button
-        type="submit"
-        class="custom-bg-blue text-white px-4 py-2 rounded-md"
-      >
-        Envoyer le mail de réinitialisation
-      </button>
-      <div v-if="emailSent" class="pb-4 mt-6 font-bold text-green-500">Un mail de réinitialisation de mot de passe vous a été envoyé</div>
-    </form>
 
-    <form v-else-if="resetPassword" @submit.prevent="resetPasswordSubmit">
-      <div class="pb-2 flex flex-col">
-        <label for="newPassword" class="mb-2 text-xl">Nouveau mot de passe:</label>
+        <label class="text-xl font-bold pb-10">Mot de passe:</label>
         <input
+          class="text-center mt-2 mb-4"
           type="password"
-          id="newPassword"
-          v-model="newPassword"
+          v-model="password"
           required
-          class="log-input text-black px-2 self-center mt-2 mb-4 text-center"
         />
-      </div>
-      <button type="submit" class="custom-bg-blue text-white px-4 py-2 rounded-md">Mettre à jour le mot de passe</button>
-      <p v-if="error" class="error mt-4">{{ error }}</p>
-      <p v-if="success" class="success mt-4 font-bold text-green-500">{{ success }}</p>
-    </form>
+        <label class="text-xl font-bold pb-10"
+          >Confirmer le mot de passe:</label
+        >
+        <input
+          class="text-center mt-2 mb-4"
+          type="password"
+          v-model="confirmPassword"
+          required
+        />
 
-    <form v-else @submit.prevent="register">
-      <label class="text-xl font-bold pb-10">Nom:</label>
-      <input
-        class="text-center mt-2 mb-4"
-        type="text"
-        v-model="username"
-        required
-      />
-
-      <label class="text-xl font-bold pb-10">Email:</label>
-      <input
-        class="text-center mt-2 mb-4"
-        type="email"
-        v-model="email"
-        required
-      />
-
-      <label class="text-xl font-bold pb-10">Mot de passe:</label>
-      <input
-        class="text-center mt-2 mb-4"
-        type="password"
-        v-model="password"
-        required
-      />
-
-      <p v-if="error" class="error font-bold pb-4">{{ error }}</p>
-      <p v-if="success" class="success pb-4 font-bold text-green-500">
-        {{ success }}
-      </p>
-      <button class="custom-bg-blue text-white" type="submit">S'inscrire</button>
-    </form>
-  </div>
+        <p v-if="error" class="error font-bold pb-4">{{ error }}</p>
+        <p v-if="success" class="success pb-4 font-bold text-green-500">
+          {{ success }}
+        </p>
+        <button class="custom-bg-blue text-white" type="submit">
+          S'inscrire
+        </button>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -179,9 +226,9 @@ export default {
       default: false,
     },
     resetPassword: {
-    type: Boolean,
-    default: false,
-  },
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -189,6 +236,9 @@ export default {
       username: "",
       email: "",
       password: "",
+      confirmPassword: "",
+      newPassword: "",
+      confirmNewPassword: "",
       success: "",
       error: "",
       userLogged: false,
@@ -203,11 +253,18 @@ export default {
   methods: {
     async register() {
   try {
+    if (this.password !== this.confirmPassword) {
+      this.error = "Les mots de passe ne correspondent pas.";
+      this.success = "";
+      return;
+    }
+
     const response = await this.$axios.post("/api/auth/register", {
       username: this.username,
       email: this.email,
       password: this.password,
     });
+
     if (response.data.token) {
       localStorage.setItem("token", response.data.token);
 
@@ -230,23 +287,32 @@ export default {
     this.success = "";
   }
 },
-async requestPasswordReset() {
-  try {
-    const response = await this.$axios.post("/api/auth/request-password-reset", {
-      email: this.email,
-    });
-    this.success = "Un email de réinitialisation a été envoyé.";
-    this.error = "";
-    this.emailSent = true;
-  } catch (err) {
-    console.error(err);
-    this.error = "Erreur lors de la tentative, veuillez réessayer.";
-    this.success = "";
-  }
-},
+    async requestPasswordReset() {
+      try {
+        const response = await this.$axios.post(
+          "/api/auth/request-password-reset",
+          {
+            email: this.email,
+          }
+        );
+        this.success = "Un email de réinitialisation a été envoyé.";
+        this.error = "";
+        this.emailSent = true;
+      } catch (err) {
+        console.error(err);
+        this.error = "Erreur lors de la tentative, veuillez réessayer.";
+        this.success = "";
+      }
+    },
 
-async resetPasswordSubmit() {
+    async resetPasswordSubmit() {
   try {
+    if (this.newPassword !== this.confirmNewPassword) {
+      this.error = "Les mots de passe ne correspondent pas.";
+      this.success = "";
+      return;
+    }
+
     const token = this.$route.query.token;
     const response = await this.$axios.post("/api/auth/reset-password", {
       token,
@@ -255,20 +321,14 @@ async resetPasswordSubmit() {
     this.success = response.data.message;
     this.error = "";
     setTimeout(() => {
-        this.$router.push("/");
-      }, 2000);
+      this.$router.push("/");
+    }, 2000);
   } catch (err) {
     console.error(err);
     this.error = "Erreur lors de la réinitialisation du mot de passe.";
     this.success = "";
   }
 },
-    handleResize() {
-      const newIsMobile = window.innerWidth <= 768;
-      if (newIsMobile !== this.isMobile) {
-        this.isMobile = newIsMobile;
-      }
-    },
   },
 };
 </script>
@@ -290,6 +350,6 @@ button {
   color: red;
 }
 .custom-bg-blue {
-  background-color: #2d508e
+  background-color: #2d508e;
 }
 </style>

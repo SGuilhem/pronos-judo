@@ -97,6 +97,7 @@ export default {
       isMobile: null,
       results: {},
       leaderboard: [],
+      users: [],
     };
   },
   mounted() {
@@ -120,6 +121,7 @@ export default {
       const token = localStorage.getItem("token");
       if (!token) {
         console.error("Token manquant. Veuillez vous connecter.");
+        this.users = [];
         return;
       }
 
@@ -144,6 +146,14 @@ export default {
 
         this.users = data
           .map((prediction) => {
+            if (!prediction || !prediction.username) {
+              console.error(
+                "Prédiction invalide ou utilisateur manquant :",
+                prediction
+              );
+              return null;
+            }
+
             const competitionDay =
               this.competitionDays[prediction.competitionDay - 1];
             if (!competitionDay) {
@@ -160,19 +170,19 @@ export default {
                 firstPlace:
                   prediction.predictions[
                     index === 0 ? "womenFirstPlace" : "menFirstPlace"
-                  ],
+                  ] || "",
                 secondPlace:
                   prediction.predictions[
                     index === 0 ? "womenSecondPlace" : "menSecondPlace"
-                  ],
+                  ] || "",
                 thirdPlace1:
                   prediction.predictions[
                     index === 0 ? "womenThirdPlace1" : "menThirdPlace1"
-                  ],
+                  ] || "",
                 thirdPlace2:
                   prediction.predictions[
                     index === 0 ? "womenThirdPlace2" : "menThirdPlace2"
-                  ],
+                  ] || "",
               })),
             };
           })
@@ -182,64 +192,65 @@ export default {
           "Erreur lors de la récupération des prédictions :",
           error
         );
+        this.users = [];
       }
     },
     async fetchResults() {
-  const results = {};
-  const cachedResults =
-    JSON.parse(localStorage.getItem("competitionResults")) || {};
+      const results = {};
+      const cachedResults =
+        JSON.parse(localStorage.getItem("competitionResults")) || {};
 
-  const weightIds = Object.values(this.competitionDays)
-    .flatMap((day) => day.events.map((event) => this.getWeightId(event)))
-    .filter(Boolean);
+      const weightIds = Object.values(this.competitionDays)
+        .flatMap((day) => day.events.map((event) => this.getWeightId(event)))
+        .filter(Boolean);
 
-  const fetchPromises = weightIds.map(async (weightId) => {
-    if (cachedResults[`${this.competitionId}-${weightId}`]) {
-      results[weightId] =
-        cachedResults[`${this.competitionId}-${weightId}`];
-      return;
-    }
+      const fetchPromises = weightIds.map(async (weightId) => {
+        if (cachedResults[`${this.competitionId}-${weightId}`]) {
+          results[weightId] =
+            cachedResults[`${this.competitionId}-${weightId}`];
+          return;
+        }
 
-    try {
-      const response = await fetch(
-        `https://data.ijf.org/api/get_json?access_token=&params%5Baction%5D=competition.competitors&params%5Bid_competition%5D=${this.competitionId}&params%5Bid_weight%5D=${weightId}`
-      );
-      const data = await response.json();
+        try {
+          const response = await fetch(
+            `https://data.ijf.org/api/get_json?access_token=&params%5Baction%5D=competition.competitors&params%5Bid_competition%5D=${this.competitionId}&params%5Bid_weight%5D=${weightId}`
+          );
+          const data = await response.json();
 
-      const categoryData =
-        data.categories?.[Object.keys(data.categories)[0]]?.[weightId];
-      const competitors = Object.values(categoryData?.persons || {});
+          const categoryData =
+            data.categories?.[Object.keys(data.categories)[0]]?.[weightId];
+          const competitors = Object.values(categoryData?.persons || {});
 
-      const filteredCompetitors = competitors.filter(
-        (competitor) => competitor.place !== null
-      );
+          const filteredCompetitors = competitors.filter(
+            (competitor) => competitor.place !== null
+          );
 
-      if (filteredCompetitors.length > 0) {
-        results[weightId] = filteredCompetitors;
-        cachedResults[`${this.competitionId}-${weightId}`] =
-          filteredCompetitors;
+          if (filteredCompetitors.length > 0) {
+            results[weightId] = filteredCompetitors;
+            cachedResults[`${this.competitionId}-${weightId}`] =
+              filteredCompetitors;
+          }
+        } catch (error) {
+          console.error(
+            `Erreur lors de la récupération des résultats pour weightId ${weightId}:`,
+            error
+          );
+        }
+      });
+
+      await Promise.all(fetchPromises);
+
+      localStorage.setItem("competitionResults", JSON.stringify(cachedResults));
+
+      for (const day of this.competitionDays) {
+        for (const event of day.events) {
+          const weightId = this.getWeightId(event);
+          if (weightId && results[weightId]) {
+            this.results[event] = results[weightId];
+          }
+        }
       }
-    } catch (error) {
-      console.error(
-        `Erreur lors de la récupération des résultats pour weightId ${weightId}:`,
-        error
-      );
-    }
-  });
-
-  await Promise.all(fetchPromises);
-
-  localStorage.setItem("competitionResults", JSON.stringify(cachedResults));
-
-  for (const day of this.competitionDays) {
-    for (const event of day.events) {
-      const weightId = this.getWeightId(event);
-      if (weightId && results[weightId]) {
-        this.results[event] = results[weightId];
-      }
-    }
-  }
-},
+    },
     getWeightId(event) {
       const weightMapping = {
         "Men -60kg": 1,
@@ -261,88 +272,103 @@ export default {
       return weightMapping[event] || null;
     },
     calculateUserScores() {
-  const userScoresMap = new Map();
-
-  for (const user of this.users) {
-    let score = 0;
-
-    for (const prediction of user.predictions) {
-      const eventResults = this.results[prediction.event];
-      if (!eventResults) continue;
-
-      const actualResults = {
-        firstPlace: eventResults.find(
-          (competitor) => competitor.place === "1"
-        )
-          ? `${
-              eventResults.find((competitor) => competitor.place === "1")
-                .family_name
-            } ${
-              eventResults.find((competitor) => competitor.place === "1")
-                .given_name
-            }`
-          : null,
-        secondPlace: eventResults.find(
-          (competitor) => competitor.place === "2"
-        )
-          ? `${
-              eventResults.find((competitor) => competitor.place === "2")
-                .family_name
-            } ${
-              eventResults.find((competitor) => competitor.place === "2")
-                .given_name
-            }`
-          : null,
-        thirdPlace: eventResults
-          .filter((competitor) => competitor.place === "3")
-          .map(
-            (competitor) =>
-              `${competitor.family_name} ${competitor.given_name}`
-          ),
-      };
-
-      if (!actualResults.firstPlace && !actualResults.secondPlace && actualResults.thirdPlace.length === 0) {
-        continue;
+      if (!Array.isArray(this.users) || this.users.length === 0) {
+        console.warn("Aucun utilisateur trouvé pour calculer les scores.");
+        this.leaderboard = [];
+        return;
       }
 
-      const userPredictions = {
-        firstPlace: this.normalizeName(prediction.firstPlace),
-        secondPlace: this.normalizeName(prediction.secondPlace),
-        thirdPlace: [
-          this.normalizeName(prediction.thirdPlace1),
-          this.normalizeName(prediction.thirdPlace2),
-        ],
-      };
+      const userScoresMap = new Map();
 
-      Object.keys(userPredictions).forEach((key) => {
-        if (key === "thirdPlace") {
-          userPredictions[key].forEach((predictedThirdPlace) => {
-            if (actualResults.thirdPlace.includes(predictedThirdPlace)) {
-              score += 3;
+      for (const user of this.users) {
+        if (!user || !user.username || !Array.isArray(user.predictions)) {
+          console.error("Utilisateur ou prédictions invalides :", user);
+          continue;
+        }
+
+        let score = 0;
+
+        for (const prediction of user.predictions) {
+          const eventResults = this.results[prediction.event];
+          if (!eventResults) continue;
+
+          const actualResults = {
+            firstPlace: eventResults.find(
+              (competitor) => competitor.place === "1"
+            )
+              ? `${
+                  eventResults.find((competitor) => competitor.place === "1")
+                    .family_name
+                } ${
+                  eventResults.find((competitor) => competitor.place === "1")
+                    .given_name
+                }`
+              : null,
+            secondPlace: eventResults.find(
+              (competitor) => competitor.place === "2"
+            )
+              ? `${
+                  eventResults.find((competitor) => competitor.place === "2")
+                    .family_name
+                } ${
+                  eventResults.find((competitor) => competitor.place === "2")
+                    .given_name
+                }`
+              : null,
+            thirdPlace: eventResults
+              .filter((competitor) => competitor.place === "3")
+              .map(
+                (competitor) =>
+                  `${competitor.family_name} ${competitor.given_name}`
+              ),
+          };
+
+          if (
+            !actualResults.firstPlace &&
+            !actualResults.secondPlace &&
+            actualResults.thirdPlace.length === 0
+          ) {
+            continue;
+          }
+
+          const userPredictions = {
+            firstPlace: this.normalizeName(prediction.firstPlace),
+            secondPlace: this.normalizeName(prediction.secondPlace),
+            thirdPlace: [
+              this.normalizeName(prediction.thirdPlace1),
+              this.normalizeName(prediction.thirdPlace2),
+            ],
+          };
+
+          Object.keys(userPredictions).forEach((key) => {
+            if (key === "thirdPlace") {
+              userPredictions[key].forEach((predictedThirdPlace) => {
+                if (actualResults.thirdPlace.includes(predictedThirdPlace)) {
+                  score += 3;
+                }
+              });
+            } else {
+              if (userPredictions[key] === actualResults[key]) {
+                score += 3;
+              }
             }
           });
-        } else {
-          if (userPredictions[key] === actualResults[key]) {
-            score += 3;
-          }
         }
-      });
-    }
 
-    if (userScoresMap.has(user.username)) {
-      userScoresMap.set(
-        user.username,
-        userScoresMap.get(user.username) + score
-      );
-    } else {
-      userScoresMap.set(user.username, score);
-    }
-  }
+        if (userScoresMap.has(user.username)) {
+          userScoresMap.set(
+            user.username,
+            userScoresMap.get(user.username) + score
+          );
+        } else {
+          userScoresMap.set(user.username, score);
+        }
+      }
 
-  this.leaderboard = Array.from(userScoresMap.entries())
-    .map(([username, points]) => ({ username, points }))
-    .sort((a, b) => b.points - a.points);
-},
+      this.leaderboard = Array.from(userScoresMap.entries())
+        .map(([username, points]) => ({ username, points }))
+        .sort((a, b) => b.points - a.points);
+    },
     normalizeName(name) {
       return name.replace(/\s*\(.*?\)\s*/g, "").trim();
     },

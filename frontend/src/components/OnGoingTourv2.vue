@@ -30,7 +30,6 @@
           Jour {{ day }}
         </button>
       </div>
-      <!-- currentCompetitionDay: {{ currentCompetitionDay }} //  -->
       <div v-if="selectedDay" class="container">
         <div class="day-title mb-1 mt-8">{{ womenEvent }} & {{ menEvent }}</div>
         <div class="prediction-container my-4">
@@ -162,7 +161,6 @@ export default {
   mounted() {
     this.checkMobile();
     window.addEventListener("resize", this.checkMobile);
-    console.log("competitionDays: ", this.competitionDays[this.currentCompetitionDay].date)
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.checkMobile);
@@ -176,7 +174,6 @@ export default {
       this.daySelected = day - 1;
       this.womenEvent = this.competitionDays[this.daySelected].events[0];
       this.menEvent = this.competitionDays[this.daySelected].events[1];
-      console.log("this.daySelected: ", this.daySelected);
     },
     validatePrediction() {
       this.predictionObject = {
@@ -189,7 +186,6 @@ export default {
         menThirdPlace1: this.menThirdPlace1,
         menThirdPlace2: this.menThirdPlace2,
       }
-      console.log("this.predictionObject: ", this.predictionObject)
     }
   },
   computed: {
