@@ -107,7 +107,6 @@ export default {
     this.isMobile = window.innerWidth <= 768;
     window.addEventListener("resize", this.checkMobile);
     this.fetchArchivedCompetitions().then(() => {
-    console.log("Compétitions archivées :", this.archivedCompetitions);
   });
   },
   methods: {
@@ -120,14 +119,12 @@ export default {
             "Cache-Control": "no-cache",
           },
         });
-        console.log("Réponse brute :", response);
         if (!response.ok) {
           throw new Error(
             "Erreur lors de la récupération des compétitions archivées"
           );
         }
         const data = await response.json();
-        console.log("Données reçues :", data);
         this.archivedCompetitions = data;
       } catch (error) {
         console.error(error);

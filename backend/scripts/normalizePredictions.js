@@ -18,7 +18,6 @@ function normalizePredictions(predictions) {
 
 async function normalizeExistingPredictions() {
   try {
-    // Supprimez les options dépréciées
     await mongoose.connect(process.env.MONGO_URI);
 
     const predictions = await Prediction.find();
@@ -29,9 +28,7 @@ async function normalizeExistingPredictions() {
       await prediction.save();
     }
 
-    console.log('Normalisation des prédictions terminée avec succès.');
   } catch (err) {
-    console.error('Erreur lors de la normalisation des prédictions :', err);
   } finally {
     mongoose.disconnect();
   }
