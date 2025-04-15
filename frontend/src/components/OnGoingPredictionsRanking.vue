@@ -22,17 +22,17 @@
           <thead>
             <tr>
               <th
-                class="border border-gray-300 px-2 lg:px-4 py-1 lg:py-2 bg-gray-100 w-1/12 lg:w-1/12"
+                class="border border-gray-300 px-2 lg:px-4 py-4 bg-gray-100 w-1/12 lg:w-1/12"
               >
                 Position
               </th>
               <th
-                class="border border-gray-300 px-2 lg:px-4 py-1 lg:py-2 bg-gray-100 w-6/12 lg:w-7/12"
+                class="border border-gray-300 px-2 lg:px-4 py-4 bg-gray-100 w-6/12 lg:w-7/12"
               >
                 Utilisateur
               </th>
               <th
-                class="border border-gray-300 px-2 lg:px-4 py-1 lg:py-2 bg-gray-100 w-5/12 lg:w-4/12"
+                class="border border-gray-300 px-2 lg:px-4 py-4 bg-gray-100 w-5/12 lg:w-4/12"
               >
                 Points cumulés
               </th>
@@ -41,17 +41,17 @@
           <tbody>
             <tr v-for="(user, index) in leaderboard" :key="index">
               <td
-                class="border border-gray-300 px-2 lg:px-4 py-1 lg:py-2 w-1/12 lg:w-1/12"
+                class="border border-gray-300 px-2 lg:px-4 py-4 w-1/12 lg:w-1/12"
               >
                 {{ index + 1 }}
               </td>
               <td
-                class="border border-gray-300 px-2 lg:px-4 py-1 lg:py-2 w-6/12 lg:w-7/12"
+                class="border border-gray-300 px-2 lg:px-4 py-4 w-6/12 lg:w-7/12"
               >
                 {{ user.username }}
               </td>
               <td
-                class="border border-gray-300 px-2 lg:px-4 py-1 lg:py-2 w-5/12 lg:w-4/12"
+                class="border border-gray-300 px-2 lg:px-4 py-4 w-5/12 lg:w-4/12"
               >
                 {{ user.points }} pts
               </td>
@@ -96,18 +96,24 @@ export default {
     return {
       isMobile: null,
       results: {},
-      leaderboard: [],
+      leaderboard: [
+      { username: "Alice", points: 45 },
+      { username: "Bob", points: 38 },
+      { username: "Charlie", points: 32 },
+      { username: "Diana", points: 28 },
+      { username: "Eve", points: 20 },
+    ],
       users: [],
     };
   },
   mounted() {
     this.checkMobile();
     window.addEventListener("resize", this.checkMobile);
-    this.fetchUserPredictions().then(() => {
+    /* this.fetchUserPredictions().then(() => {
       this.fetchResults().then(() => {
         this.calculateUserScores();
       });
-    });
+    }); */
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.checkMobile);

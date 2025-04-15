@@ -39,7 +39,7 @@
           Jour {{ day }}
         </button>
       </div>
-      <div v-if="selectedDay" class="container">
+      <div v-if="selectedDay" class="container lg:mt-6 mt-2">
         <div class="day-title mb-1 mt-8">{{ womenEvent }} & {{ menEvent }}</div>
 
         <div v-if="loading" class="my-4 p-4 text-center">
