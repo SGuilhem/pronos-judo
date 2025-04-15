@@ -118,6 +118,7 @@ export default {
     },
 
     async fetchUserPredictions() {
+      const API_URL = process.env.VUE_APP_API_URL;
       const token = localStorage.getItem("token");
       if (!token) {
         console.error("Token manquant. Veuillez vous connecter.");
@@ -127,7 +128,7 @@ export default {
 
       try {
         const response = await fetch(
-          `http://localhost:5000/api/predictions?competitionId=${this.competitionId}`,
+          `${API_URL}/api/predictions?competitionId=${this.competitionId}`,
           {
             method: "GET",
             headers: {

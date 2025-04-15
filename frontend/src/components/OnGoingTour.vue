@@ -335,6 +335,7 @@ export default {
   mounted() {
     this.checkMobile();
     window.addEventListener("resize", this.checkMobile);
+    const API_URL = process.env.VUE_APP_API_URL;
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.checkMobile);
@@ -363,7 +364,7 @@ export default {
 
       try {
         const response = await fetch(
-          `http://localhost:5000/api/predictions/${this.competitionId}/${day}`,
+           `${API_URL}/api/predictions/${this.competitionId}/${day}`,
           {
             method: "GET",
             headers: {
@@ -519,7 +520,7 @@ export default {
 
       try {
         const method = this.predictionSubmitted ? "PUT" : "POST";
-        const response = await fetch("http://localhost:5000/api/predictions", {
+        const response = await fetch(`${API_URL}/api/predictions`, {
           method: method,
           headers: {
             "Content-Type": "application/json",

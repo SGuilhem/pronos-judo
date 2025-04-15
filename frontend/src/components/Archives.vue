@@ -97,8 +97,9 @@ export default {
   },
   methods: {
     async fetchArchivedCompetitions() {
+      const API_URL = process.env.VUE_APP_API_URL;
       try {
-        const response = await fetch("http://localhost:5000/api/archived-competitions");
+        const response = await fetch(`${API_URL}//api/archived-competitions"`);
         if (!response.ok) {
           throw new Error("Erreur lors de la récupération des compétitions archivées");
         }
