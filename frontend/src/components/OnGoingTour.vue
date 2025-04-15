@@ -336,17 +336,14 @@ export default {
   mounted() {
     this.checkMobile();
     window.addEventListener("resize", this.checkMobile);
-    const API_URL = process.env.VUE_APP_API_URL; // Assurez-vous que cette ligne est présente
-    console.log("API_URL:", API_URL);
+    const API_URL = process.env.VUE_APP_API_URL;
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.checkMobile);
   },
   methods: {
     getCurrentDate() {
-      // Retourne une date fixe pour les tests
-      const simulatedDate = new Date("2025-04-22T12:00:00");
-      return simulatedDate;
+      return new Date();
     },
     checkMobile() {
       this.isMobile = window.innerWidth <= 768;
@@ -370,6 +367,7 @@ export default {
       }
 
       try {
+        const method = this.predictionSubmitted ? "PUT" : "POST";
         const response = await fetch(`${this.API_URL}/api/predictions`, {
           method: method,
           headers: {
