@@ -29,7 +29,7 @@
         </p>
         <button
           type="submit"
-          class="custom-bg-blue text-white px-4 py-2 rounded-md"
+          class="border-2 custom-bg-blue text-white font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 px-4 py-2"
         >
           Envoyer le mail de réinitialisation
         </button>
@@ -61,7 +61,7 @@
         </div>
         <button
           type="submit"
-          class="custom-bg-blue text-white px-4 py-2 rounded-md"
+          class="border-2 custom-bg-blue text-white font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 px-4 py-2"
         >
           Mettre à jour le mot de passe
         </button>
@@ -109,7 +109,7 @@
         <p v-if="success" class="success pb-4 font-bold text-green-500">
           {{ success }}
         </p>
-        <button class="custom-bg-blue text-white" type="submit">
+        <button class="border-2 bg-blue-500 text-slate-800 font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-white hover:text-blue-500 hover:scale-105 active:scale-95 px-4 py-2" type="submit">
           S'inscrire
         </button>
       </form>
@@ -145,7 +145,7 @@
         </p>
         <button
           type="submit"
-          class="custom-bg-blue text-white px-4 py-2 rounded-md"
+          class="border-2 custom-bg-blue text-white font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 px-4 py-2"
         >
           Envoyer le mail de réinitialisation
         </button>
@@ -177,7 +177,7 @@
   </div>
   <button
     type="submit"
-    class="custom-bg-blue text-white px-4 py-2 rounded-md"
+    class="border-2 custom-bg-blue text-white font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 px-4 py-2"
   >
     Mettre à jour le mot de passe
   </button>
@@ -225,7 +225,7 @@
         <p v-if="success" class="success pb-4 font-bold text-green-500">
           {{ success }}
         </p>
-        <button class="custom-bg-blue text-white" type="submit">
+        <button class="border-2 custom-bg-blue text-white font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 px-4 py-2" type="submit">
           S'inscrire
         </button>
       </form>

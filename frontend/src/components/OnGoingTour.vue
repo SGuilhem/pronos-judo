@@ -40,7 +40,10 @@
         </button>
       </div>
       <div v-if="selectedDay" class="container lg:mt-6 mt-2">
-        <div class="day-title mb-1 mt-8">{{ womenEvent }} & {{ menEvent }}</div>
+        <div class="day-title mb-1 mt-8">
+          <i class="fas fa-female"></i> {{ womenEvent }} &
+          <i class="fas fa-male"></i> {{ menEvent }}
+        </div>
 
         <div v-if="loading" class="my-4 p-4 text-center">
           <p>Chargement des données en cours...</p>
@@ -64,12 +67,12 @@
             disponibles
           </div>
           <div class="text-xl mt-4 underline lg:mx-0 mx-4">
-            🕒 Pronostic ouvert : de la veille jusqu’à 8h (heure de Paris) le
-            jour de la catégorie.
+            🕒 Pronostics possibles dès la veille et jusqu’à 8h du jour de la
+            catégorie (heure de Paris).
           </div>
           <div
-            :class="`women-prediction text-2xl mt-5 mb-2 ml-5 flex align-left bold underline ${
-              isMobile ? 'justify-center text-2xl' : ''
+            :class="`women-prediction text-2xl mt-5 mb-2 flex align-left bold underline ${
+              isMobile ? 'justify-center text-2xl' : 'ml-10'
             }`"
           >
             Pronostics Femmes:
@@ -80,21 +83,27 @@
               :key="index"
               :class="isMobile ? 'flex flex-col m-auto' : 'flex flex-row my-2'"
             >
+            <div
+  :class="isMobile ? 'flex flex-col m-auto' : 'flex flex-row items-center my-2 w-full ml-10'"
+>
               <label :for="'womenPlace' + index" class="mx-4 text-xl underline">
                 {{ select.label }}
               </label>
               <select
                 :id="'womenPlace' + index"
-                class="prediction-select text-black px-2 lg:w-1/2"
+                class="prediction-select text-black px-2 lg:w-1/2 ml-3 text-gray-400"
                 :class="{
                   'ml-3': !isMobile && index === 0,
-                  'my-2': isMobile,
+                  'mt-2 mb-6': isMobile,
+                  'text-gray-400':
+                    !isCategoryActive(categoryMapping[selectedDay].men) ||
+                    isCategoryPredicted(categoryMapping[selectedDay].men),
                 }"
                 v-model="select.value"
                 required
                 :disabled="
-                  !isCategoryActive(categoryMapping[selectedDay].women) ||
-                  isCategoryPredicted(categoryMapping[selectedDay].women)
+                  !isCategoryActive(categoryMapping[selectedDay].men) ||
+                  isCategoryPredicted(categoryMapping[selectedDay].men)
                 "
               >
                 <option value="" disabled>Choisissez une judoka</option>
@@ -107,10 +116,11 @@
                 </option>
               </select>
             </div>
+            </div>
           </div>
           <div
-            :class="`men-prediction text-2xl mt-5 mb-2 ml-4 flex align-left bold underline ${
-              isMobile ? 'justify-center text-2xl' : ''
+            :class="`men-prediction text-2xl mt-5 mb-2 flex align-left bold underline ${
+              isMobile ? 'justify-center text-2xl' : 'ml-10'
             }`"
           >
             Pronostics Hommes:
@@ -121,15 +131,21 @@
               :key="index"
               :class="isMobile ? 'flex flex-col m-auto' : 'flex flex-row my-2'"
             >
+            <div
+  :class="isMobile ? 'flex flex-col m-auto' : 'flex flex-row items-center my-2 w-full ml-10'"
+>
               <label :for="'menPlace' + index" class="mx-4 text-xl underline">
                 {{ select.label }}
               </label>
               <select
                 :id="'menPlace' + index"
-                class="prediction-select text-black px-2 lg:w-1/2"
+                class="prediction-select text-black px-2 lg:w-1/2 ml-3 text-gray-400"
                 :class="{
                   'ml-3': !isMobile && index === 0,
-                  'my-2': isMobile,
+                  'mt-2 mb-6': isMobile,
+                  'text-gray-400':
+                    !isCategoryActive(categoryMapping[selectedDay].men) ||
+                    isCategoryPredicted(categoryMapping[selectedDay].men),
                 }"
                 v-model="select.value"
                 required
@@ -147,6 +163,7 @@
                   {{ option }}
                 </option>
               </select>
+              </div>
             </div>
           </div>
           <button
@@ -488,74 +505,74 @@ export default {
       );
     },
     async validatePrediction() {
-  const womenPredictions = this.predictions[this.selectedDay].women.reduce(
-    (acc, select, index) => {
-      const keys = [
-        "FirstPlace",
-        "SecondPlace",
-        "ThirdPlace1",
-        "ThirdPlace2",
-      ];
-      acc[`women${keys[index]}`] = select.value || "";
-      return acc;
+      const womenPredictions = this.predictions[this.selectedDay].women.reduce(
+        (acc, select, index) => {
+          const keys = [
+            "FirstPlace",
+            "SecondPlace",
+            "ThirdPlace1",
+            "ThirdPlace2",
+          ];
+          acc[`women${keys[index]}`] = select.value || "";
+          return acc;
+        },
+        {}
+      );
+
+      const menPredictions = this.predictions[this.selectedDay].men.reduce(
+        (acc, select, index) => {
+          const keys = [
+            "FirstPlace",
+            "SecondPlace",
+            "ThirdPlace1",
+            "ThirdPlace2",
+          ];
+          acc[`men${keys[index]}`] = select.value || "";
+          return acc;
+        },
+        {}
+      );
+
+      this.predictionObject = {
+        ...womenPredictions,
+        ...menPredictions,
+      };
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("Token manquant. Veuillez vous connecter.");
+        return;
+      }
+
+      try {
+        const method = this.predictionSubmitted ? "PUT" : "POST";
+        const response = await fetch(`${this.API_URL}/api/predictions`, {
+          method: method,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            predictions: this.predictionObject,
+            competitionDay: this.selectedDay,
+            competitionId: this.competitionId,
+            date: new Date().toISOString().split("T")[0],
+          }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.warn("Erreur côté backend :", errorText);
+          return;
+        }
+
+        const result = await response.json();
+
+        this.predictionSubmitted = true;
+      } catch (error) {
+        console.error("Erreur réseau :", error);
+      }
     },
-    {}
-  );
-
-  const menPredictions = this.predictions[this.selectedDay].men.reduce(
-    (acc, select, index) => {
-      const keys = [
-        "FirstPlace",
-        "SecondPlace",
-        "ThirdPlace1",
-        "ThirdPlace2",
-      ];
-      acc[`men${keys[index]}`] = select.value || "";
-      return acc;
-    },
-    {}
-  );
-
-  this.predictionObject = {
-    ...womenPredictions,
-    ...menPredictions,
-  };
-
-  const token = localStorage.getItem("token");
-  if (!token) {
-    console.error("Token manquant. Veuillez vous connecter.");
-    return;
-  }
-
-  try {
-    const method = this.predictionSubmitted ? "PUT" : "POST";
-    const response = await fetch(`${this.API_URL}/api/predictions`, {
-      method: method,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        predictions: this.predictionObject,
-        competitionDay: this.selectedDay,
-        competitionId: this.competitionId,
-        date: new Date().toISOString().split("T")[0],
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.warn("Erreur côté backend :", errorText);
-      return;
-    }
-
-    const result = await response.json();
-
-    this.predictionSubmitted = true;
-  } catch (error) {
-    console.error("Erreur réseau :", error);
-  }
-},
     isCategoryActive(categoryId) {
       const now = this.getCurrentDate();
       const categorySchedules = {
@@ -672,6 +689,16 @@ export default {
 <style>
 .btn {
   border: 2px solid slategray;
+  border-radius: 5px;
+  transition: background-color 0.3s, transform 0.2s;
+}
+.btn:hover {
+  background-color: #007bff;
+  color: white;
+  transform: scale(1.05);
+}
+.btn:active {
+  transform: scale(0.95);
 }
 .prediction-container {
   border: 2px solid slategray;
@@ -680,11 +707,24 @@ export default {
   border: 2px solid slategray;
 }
 .prediction-select {
-  border: 2px solid slategrey;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  padding: 8px;
+  transition: border-color 0.3s;
+}
+.prediction-select:focus {
+  border-color: #007bff;
+  outline: none;
 }
 @media screen and (max-width: 768px) {
   select {
     max-width: 300px;
+  }
+  .prediction-container {
+    padding: 10px;
+  }
+  .btn {
+    margin-bottom: 10px;
   }
 }
 </style>

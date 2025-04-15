@@ -17,7 +17,7 @@
   >
     <button
       @click="closeMenu"
-      class="absolute top-4 right-4 z-50 text-white text-xl"
+      class="absolute p-4 right-4 z-50 text-white text-xl"
     >
       <img
         src="./../static/svg/cross-close.svg"
@@ -27,14 +27,14 @@
     </button>
     <div class="align-center container">
       <img src="./../static/InterbudoLogo.png" class="m-auto size-48 py-4" />
-      <div v-if="userLogged" class="pt-4">
+      <div v-if="userLogged" class="text-xl pt-4">
         <div>Bienvenue</div>
-        <div v-if="userName" class="font-bold">{{ userName }}</div>
+        <div v-if="userName" class="text-xl font-bold">{{ userName }}</div>
       </div>
       <div v-else class="login-container m-auto text-center">
         <form @submit.prevent="login">
           <div class="pb-2 flex flex-col">
-            <label for="email">Email</label>
+            <label for="email">Email:</label>
             <input
               type="email"
               class="log-input text-black px-2 self-center"
@@ -43,7 +43,7 @@
             />
           </div>
           <div class="pb-1 flex flex-col">
-            <label for="password">Password</label>
+            <label for="password">Password:</label>
             <input
               type="password"
               class="log-input text-black px-2 self-center"
@@ -60,20 +60,15 @@
           <p v-if="error" class="error font-bold text-red-600 pb-6">
             {{ error }}
           </p>
-          <button
-            type="submit"
-            class="bg-white text-black border border-gray-300 px-4 py-2 text-sm uppercase shadow hover:bg-gray-100"
-          >
-            Connexion
-          </button>
+          <button type="submit" class="border-2 bg-white text-slate-800 font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 px-4 py-2">Connexion</button>
         </form>
       </div>
       <ul
         v-if="userLogged"
-        class="text-center flex flex-col font-semibold pt-8"
+        class="text-center flex flex-col font-semibold pt-8 items-center"
       >
         <li
-          class="inline hover:text-gray-200 cell cursor-pointer py-4"
+          class="lg:w-full border-2 border-gray-200 bg-blue-500 text-white p-4 w-3/4 rounded-md text-center mt-2 transition-transform duration-200 hover:bg-blue-700 hover:scale-105 active:scale-95 cursor-pointer"
           v-for="link in links"
           v-bind:key="link"
           :class="{ 'underline-gradient': selectedLink === link }"
@@ -85,7 +80,7 @@
       <button
         v-if="userLogged"
         type="submit"
-        class="bg-white text-black border border-gray-300 px-4 py-2 text-sm uppercase shadow hover:bg-gray-100 mt-8"
+        class="mt-4 border-2 bg-white text-slate-800 font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 px-4 py-2"
         @click="logout"
       >
         Déconnexion
@@ -94,10 +89,7 @@
     <div v-if="!userLogged" class="pt-6 text-center">
       <p>Vous n'avez pas de compte ?</p>
       <router-link :to="{ name: 'register' }">
-        <button
-          @click="closeMenu"
-          class="bg-white text-black border border-gray-300 px-4 py-2 text-sm uppercase shadow hover:bg-gray-100 mt-2"
-        >
+        <button @click="closeMenu" class="mt-2 border-2 bg-white text-slate-800 font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 px-4 py-2">
           Créer un compte
         </button>
       </router-link>
@@ -111,14 +103,14 @@
   >
     <div class="align-center container">
       <img src="./../static/InterbudoLogo.png" class="m-auto size-48 py-4" />
-      <div v-if="userLogged" class="pt-4">
+      <div v-if="userLogged" class="text-lg pt-4">
         <div>Bienvenue</div>
-        <div v-if="userName" class="font-bold">{{ userName }}</div>
+        <div v-if="userName" class="text-lg font-bold">{{ userName }}</div>
       </div>
       <div v-if="!userLogged" class="login-container m-auto text-center">
         <form @submit.prevent="login">
           <div class="pb-2 flex flex-col items-center">
-            <label for="email">Email</label>
+            <label for="email">Email:</label>
             <input
               type="email"
               class="log-input text-black px-2"
@@ -127,7 +119,7 @@
             />
           </div>
           <div class="pb-1 flex flex-col items-center">
-            <label for="password">Password</label>
+            <label for="password">Password:</label>
             <input
               type="password"
               class="log-input text-black px-2"
@@ -136,7 +128,7 @@
             />
           </div>
           <div
-            class="pb-6 underline text-sm cursor-pointer text-center"
+            class="mt-4 pb-6 underline text-md cursor-pointer text-center"
             @click="forgottenPassword()"
           >
             Mot de passe oublié?
@@ -144,12 +136,7 @@
           <p v-if="error" class="error font-bold text-red-600 pb-6">
             {{ error }}
           </p>
-          <button
-            type="submit"
-            class="bg-white text-black border border-gray-300 px-4 py-2 text-sm uppercase shadow hover:bg-gray-100"
-          >
-            Connexion
-          </button>
+          <button type="submit" class="border-2 bg-white text-slate-800 font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 px-4 py-2">Connexion</button>
         </form>
       </div>
       <ul
@@ -157,7 +144,7 @@
         class="text-center flex flex-col font-semibold pt-8"
       >
         <li
-          class="inline hover:text-gray-200 cell cursor-pointer py-4"
+          class="lg:w-full border-2 border-gray-200 bg-blue-500 text-white p-4 w-3/4 rounded-md text-center mt-2 transition-transform duration-200 hover:bg-blue-700 hover:scale-105 active:scale-95 cursor-pointer"
           v-for="link in links"
           v-bind:key="link"
           :class="{ 'underline-gradient': selectedLink === link }"
@@ -169,21 +156,17 @@
       <button
         v-if="userLogged"
         type="submit"
-        class="bg-white text-black border border-gray-300 px-4 py-2 text-sm uppercase shadow hover:bg-gray-100 mt-8"
+        class="mt-4 border-2 bg-white text-slate-800 font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 px-4 py-2"
         @click="logout"
       >
         Déconnexion
       </button>
     </div>
 
-    <div v-if="!userLogged" class="pt-6 text-center">
+    <div v-if="!userLogged" class="mt-4 pb-6 text-md text-center">
       <p>Vous n'avez pas de compte ?</p>
       <router-link :to="{ name: 'register' }">
-        <button
-          class="bg-white text-black border border-gray-300 px-4 py-2 text-sm uppercase shadow hover:bg-gray-100 mt-2"
-        >
-          Créer un compte
-        </button>
+        <button class="mt-4 border-2 bg-white text-slate-800 font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 px-4 py-2">Créer un compte</button>
       </router-link>
     </div>
   </div>
@@ -319,6 +302,8 @@ export default {
 @media screen and (max-width: 768px) {
   .hamburger {
     display: inline;
+    position: sticky;
+    top: 0;
   }
 }
 
@@ -365,26 +350,6 @@ export default {
   }
 }
 
-.login-container input {
-  min-width: auto;
-}
-
-@media screen and (max-width: 768px) {
-  .login-container input {
-    min-width: 280px;
-  }
-}
-
-.log-input {
-  width: 80%;
-}
-
-@media screen and (max-width: 768px) {
-  .log-input {
-    width: 60%;
-  }
-}
-
 .underline-gradient {
   position: relative;
 }
@@ -412,19 +377,5 @@ export default {
   to {
     width: calc(100% + 14px);
   }
-}
-
-.cell {
-  width: 100%;
-  border: rgb(191 219 254) 1px solid;
-  background-color: rgb(59 130 246);
-}
-
-.custom-blue {
-  color: #2d508e;
-}
-
-.custom-bg-blue {
-  background-color: #2d508e;
 }
 </style>
