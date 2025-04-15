@@ -31,7 +31,7 @@
         <div>Bienvenue</div>
         <div v-if="userName" class="font-bold">{{ userName }}</div>
       </div>
-      <div v-else class="login-container m-auto">
+      <div v-else class="login-container m-auto text-center">
         <form @submit.prevent="login">
           <div class="pb-2 flex flex-col">
             <label for="email">Email</label>
@@ -91,7 +91,7 @@
         Déconnexion
       </button>
     </div>
-    <div v-if="!userLogged" class="pt-6">
+    <div v-if="!userLogged" class="pt-6 text-center">
       <p>Vous n'avez pas de compte ?</p>
       <router-link :to="{ name: 'register' }">
         <button
@@ -115,7 +115,7 @@
         <div>Bienvenue</div>
         <div v-if="userName" class="font-bold">{{ userName }}</div>
       </div>
-      <div v-if="!userLogged" class="login-container m-auto">
+      <div v-if="!userLogged" class="login-container m-auto text-center">
         <form @submit.prevent="login">
           <div class="pb-2 flex flex-col items-center">
             <label for="email">Email</label>
@@ -136,7 +136,7 @@
             />
           </div>
           <div
-            class="pb-6 underline text-sm cursor-pointer"
+            class="pb-6 underline text-sm cursor-pointer text-center"
             @click="forgottenPassword()"
           >
             Mot de passe oublié?
@@ -176,7 +176,7 @@
       </button>
     </div>
 
-    <div v-if="!userLogged" class="pt-6">
+    <div v-if="!userLogged" class="pt-6 text-center">
       <p>Vous n'avez pas de compte ?</p>
       <router-link :to="{ name: 'register' }">
         <button
@@ -288,6 +288,9 @@ export default {
     },
     forgottenPassword() {
       this.$router.push({ name: "register", query: { passwordReset: "true" } });
+      if (this.isMobile) {
+        this.toggleMobileMenu = false;
+      }
     },
     handleResize() {
       const newIsMobile = window.innerWidth <= 768;
@@ -307,7 +310,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 .hamburger {
   display: none;
 }

@@ -114,7 +114,7 @@ export default {
   },
 };
 </script>
-<style scoped>
+<style>
 .custom-bg-blue {
   background-color: #2d508e
 }

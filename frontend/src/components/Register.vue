@@ -49,6 +49,16 @@
             class="log-input text-black px-2 self-center mt-2 mb-4 text-center"
           />
         </div>
+        <div class="pb-2">
+          <label for="newPassword" class="text-xl">Confirmer le mot de passe:</label>
+          <input
+          type="password"
+      id="confirmNewPassword"
+      v-model="confirmNewPassword"
+      required
+            class="log-input text-black px-2 self-center mt-2 mb-4 text-center"
+          />
+        </div>
         <button
           type="submit"
           class="custom-bg-blue text-white px-4 py-2 rounded-md"
@@ -85,15 +95,21 @@
           v-model="password"
           required
         />
+        <label class="text-xl font-bold pb-10"
+          >Confirmer le mot de passe:</label
+        >
+        <input
+          class="text-center mt-2 mb-4"
+          type="password"
+          v-model="confirmPassword"
+          required
+        />
 
         <p v-if="error" class="error font-bold pb-4">{{ error }}</p>
         <p v-if="success" class="success pb-4 font-bold text-green-500">
           {{ success }}
         </p>
-        <button
-          class="custom-bg-blue text-white px-4 py-2 rounded-md"
-          type="submit"
-        >
+        <button class="custom-bg-blue text-white" type="submit">
           S'inscrire
         </button>
       </form>
@@ -333,7 +349,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 .register-container {
   max-width: 400px;
   margin: auto;
