@@ -312,55 +312,76 @@ export default {
 
 <style>
 .hamburger {
+  text-align: left;
   display: none;
 }
 
 @media screen and (max-width: 768px) {
   .hamburger {
-    text-align: left;
     display: inline;
   }
 }
 
 .side-menu-desktop {
-  @media screen and (min-width: 768px) {
-    position: static;
-    min-height: 100vh;
-    width: 15%;
-    color: white;
-    text-align: center;
-    padding: 20px;
-  }
+  position: static;
+  min-height: 100vh;
+  width: 15%;
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
 
-  @media screen and (max-width: 768px) {
+@media screen and (max-width: 768px) {
+  .side-menu-desktop {
     display: none;
   }
 }
 
 .side-menu-mobile {
-  @media screen and (max-width: 768px) {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    color: white;
-    text-align: center;
-    padding: 0;
-    z-index: 100;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  color: white;
+  text-align: center;
+  padding: 0;
+  z-index: 100;
+}
+
+@media screen and (min-width: 769px) {
+  .side-menu-mobile {
+    display: none;
   }
 }
 
 .container {
   margin-top: 25%;
-  @media screen and (max-width: 768px) {
+}
+
+@media screen and (max-width: 768px) {
+  .container {
     margin-top: 15%;
   }
 }
 
 .login-container input {
-  @media screen and (max-width: 768px) {
+  min-width: auto;
+}
+
+@media screen and (max-width: 768px) {
+  .login-container input {
     min-width: 280px;
+  }
+}
+
+.log-input {
+  width: 80%;
+}
+
+@media screen and (max-width: 768px) {
+  .log-input {
+    width: 60%;
   }
 }
 
@@ -393,33 +414,16 @@ export default {
   }
 }
 
-.container {
-  margin-top: 25%;
-  @media screen and (max-width: 768px) {
-    margin-top: 15%;
-  }
-}
-
-.login-container input {
-  @media screen and (max-width: 768px) {
-    min-width: 280px;
-  }
-}
-
 .cell {
   width: 100%;
   border: rgb(191 219 254) 1px solid;
   background-color: rgb(59 130 246);
 }
-.log-input {
-  width: 80%;
-  @media screen and (max-width: 768px) {
-    width: 60%;
-  }
-}
+
 .custom-blue {
   color: #2d508e;
 }
+
 .custom-bg-blue {
   background-color: #2d508e;
 }

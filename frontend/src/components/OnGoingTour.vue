@@ -674,8 +674,8 @@ export default {
 .prediction-select {
   border: 2px solid slategrey;
 }
-select {
-  @media screen and (max-width: 768px) {
+@media screen and (max-width: 768px) {
+  select {
     max-width: 300px;
   }
 }
