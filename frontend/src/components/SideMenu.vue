@@ -27,9 +27,9 @@
     </button>
     <div class="align-center container">
       <img src="./../static/InterbudoLogo.png" class="m-auto size-48 py-4" />
-      <div v-if="userLogged" class="text-xl pt-4">
+      <div v-if="userLogged" class="text-2xl pt-4">
         <div>Bienvenue</div>
-        <div v-if="userName" class="text-xl font-bold">{{ userName }}</div>
+        <div v-if="userName" class="text-3xl font-bold">{{ userName }}</div>
       </div>
       <div v-else class="login-container m-auto text-center">
         <form @submit.prevent="login">
@@ -103,9 +103,9 @@
   >
     <div class="align-center container">
       <img src="./../static/InterbudoLogo.png" class="m-auto size-48 py-4" />
-      <div v-if="userLogged" class="text-lg pt-4">
+      <div v-if="userLogged" class="text-xl pt-4">
         <div>Bienvenue</div>
-        <div v-if="userName" class="text-lg font-bold">{{ userName }}</div>
+        <div v-if="userName" class="text-2xl font-bold">{{ userName }}</div>
       </div>
       <div v-if="!userLogged" class="login-container m-auto text-center">
         <form @submit.prevent="login">
@@ -319,6 +319,11 @@ export default {
 @media screen and (max-width: 768px) {
   .side-menu-desktop {
     display: none;
+  }
+}
+@media screen and (min-width: 1200px) and (max-width: 1680px) {
+  .side-menu-desktop {
+    width: 20%;
   }
 }
 

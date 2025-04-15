@@ -77,7 +77,7 @@
           >
             Pronostics Femmes:
           </div>
-          <div class="pb-2 flex flex-col mt-4 ml-4">
+          <div class="pb-2 flex flex-col mt-4 lg:ml-4 ml-0">
             <div
               v-for="(select, index) in predictions[selectedDay].women"
               :key="index"
@@ -91,10 +91,10 @@
               </label>
               <select
                 :id="'womenPlace' + index"
-                class="prediction-select text-black px-2 lg:w-1/2 ml-3 text-gray-400"
+                class="prediction-select text-black px-2 lg:w-1/2 text-gray-400"
                 :class="{
                   'ml-3': !isMobile && index === 0,
-                  'mt-2 mb-6': isMobile,
+                  'mt-2 mb-6 ml-0': isMobile,
                   'text-gray-400':
                     !isCategoryActive(categoryMapping[selectedDay].men) ||
                     isCategoryPredicted(categoryMapping[selectedDay].men),
@@ -125,7 +125,7 @@
           >
             Pronostics Hommes:
           </div>
-          <div class="pb-2 flex flex-col mt-4 ml-4">
+          <div class="pb-2 flex flex-col mt-4 lg:ml-4 ml-0">
             <div
               v-for="(select, index) in predictions[selectedDay].men"
               :key="index"
@@ -139,10 +139,10 @@
               </label>
               <select
                 :id="'menPlace' + index"
-                class="prediction-select text-black px-2 lg:w-1/2 ml-3 text-gray-400"
+                class="prediction-select text-black px-2 lg:w-1/2 text-gray-400"
                 :class="{
                   'ml-3': !isMobile && index === 0,
-                  'mt-2 mb-6': isMobile,
+                  'mt-2 mb-6 ml-0': isMobile,
                   'text-gray-400':
                     !isCategoryActive(categoryMapping[selectedDay].men) ||
                     isCategoryPredicted(categoryMapping[selectedDay].men),
