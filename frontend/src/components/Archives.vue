@@ -18,7 +18,7 @@
         >
           <div
             @click="toggleEvent(index)"
-            class="custom-bg-blue rounded-lg text-white event-title bold cursor-pointer bg-gray-200 lg:mx-0 mx-5 my-3 py-2 pl-4 flex justify-between items-center"
+            class="custom-bg-blue rounded-lg text-white event-title bold cursor-pointer lg:mx-0 mx-5 my-3 py-2 pl-4 flex justify-between items-center"
           >
             <span>
               <span class="font-bold text-2xl underline">{{
@@ -106,7 +106,9 @@ export default {
   mounted() {
     this.isMobile = window.innerWidth <= 768;
     window.addEventListener("resize", this.checkMobile);
-    this.fetchArchivedCompetitions();
+    this.fetchArchivedCompetitions().then(() => {
+    console.log("Compétitions archivées :", this.archivedCompetitions);
+  });
   },
   methods: {
     async fetchArchivedCompetitions() {
@@ -118,12 +120,15 @@ export default {
             "Cache-Control": "no-cache",
           },
         });
+        console.log("Réponse brute :", response);
         if (!response.ok) {
           throw new Error(
             "Erreur lors de la récupération des compétitions archivées"
           );
         }
-        this.archivedCompetitions = await response.json();
+        const data = await response.json();
+        console.log("Données reçues :", data);
+        this.archivedCompetitions = data;
       } catch (error) {
         console.error(error);
       }
