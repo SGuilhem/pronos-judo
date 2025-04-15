@@ -8,8 +8,6 @@ const predictionSchema = new mongoose.Schema({
   predictions: { type: Object, required: true },
 });
 
-// Ajout d'un index unique pour éviter les doublons
-/* predictionSchema.index({ userId: 1, competitionDay: 1, competitionId: 1 }, { unique: true }); */
-predictionSchema.index({ userId: 1, competitionDay: 1, competitionId: 1 },);
+predictionSchema.index({ userId: 1, competitionDay: 1, competitionId: 1 }, { unique: true });
 
 module.exports = mongoose.model('Prediction', predictionSchema);

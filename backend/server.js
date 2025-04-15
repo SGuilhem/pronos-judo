@@ -28,6 +28,16 @@ app.use(cors({
     credentials: true
 }));
 
+app.use(express.static(path.join(__dirname, "public")));
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+  });
+
+  const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Serveur démarré sur le port ${PORT}`);
+});
+
 
 app.use((req, res, next) => {
     console.log(`Requête reçue: ${req.method} ${req.url}`);

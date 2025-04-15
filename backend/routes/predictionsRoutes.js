@@ -26,21 +26,18 @@ router.post('/', authenticateToken, async (req, res) => {
   const { predictions, date, competitionDay, competitionId } = req.body;
   const userId = req.user.userId;
 
-  console.log("Données reçues dans POST :", req.body);
 
   if (!userId) {
     return res.status(400).json({ message: 'userId manquant' });
   }
 
   try {
-    // Vérifiez si une prédiction existe déjà
     const existing = await Prediction.findOne({ userId, competitionDay, competitionId });
 
     if (existing) {
       return res.status(400).json({ message: 'Prédiction déjà soumise pour ce jour de compétition.' });
     }
 
-    // Insérez une nouvelle prédiction
     const newPrediction = new Prediction({ userId, competitionDay, competitionId, date, predictions });
     await newPrediction.save();
 
@@ -67,7 +64,6 @@ router.put('/', authenticateToken, async (req, res) => {
       return res.status(404).json({ message: 'Aucune prédiction trouvée pour ce jour de compétition.' });
     }
 
-    // Fusionner les prédictions
     existing.predictions = mergePredictions(existing.predictions, predictions);
     existing.date = date || existing.date;
 
@@ -121,31 +117,41 @@ router.put('/', authenticateToken, async (req, res) => {
   });
 
 // GET ALL PREDICTIONS
-  router.get('/', authenticateToken, async (req, res) => {
-    const { competitionId } = req.query;
-  
-    try {
-      const query = {};
-      if (competitionId) {
-        query.competitionId = competitionId;
-      }
-  
-      const predictions = await Prediction.find(query)
-        .populate('userId', 'username')
-        .exec();
-  
-      const formattedPredictions = predictions.map((prediction) => ({
-        username: prediction.userId.username,
-        competitionDay: prediction.competitionDay,
-        predictions: prediction.predictions,
-      }));
-  
-      res.status(200).json(formattedPredictions);
-    } catch (err) {
-      console.error("Erreur lors de la récupération des prédictions :", err);
-      res.status(500).json({ message: 'Erreur serveur' });
+router.get('/', authenticateToken, async (req, res) => {
+  const { competitionId } = req.query;
+
+  try {
+    const query = {};
+    if (competitionId) {
+      query.competitionId = competitionId;
     }
-  });
+
+    const predictions = await Prediction.find(query)
+      .populate('userId', 'username') 
+      .exec();
+
+
+    const formattedPredictions = predictions
+      .map((prediction) => {
+        if (!prediction.userId || !prediction.userId.username) {
+          console.warn("Prédiction avec userId ou username invalide :", prediction);
+          return null;
+        }
+
+        return {
+          username: prediction.userId.username,
+          competitionDay: prediction.competitionDay,
+          predictions: prediction.predictions,
+        };
+      })
+      .filter(Boolean);
+
+    res.status(200).json(formattedPredictions);
+  } catch (err) {
+    console.error("Erreur lors de la récupération des prédictions :", err);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+});
 
   function normalizePredictions(predictions) {
     return {
