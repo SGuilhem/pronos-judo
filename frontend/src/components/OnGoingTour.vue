@@ -319,6 +319,7 @@ export default {
         },
       },
       apiBaseUrl: "https://data.ijf.org/api/get_json",
+      API_URL: process.env.VUE_APP_API_URL,
       loading: false,
       categoryMapping: {
         1: { men: 1, women: 8 },
@@ -335,12 +336,18 @@ export default {
   mounted() {
     this.checkMobile();
     window.addEventListener("resize", this.checkMobile);
-    const API_URL = process.env.VUE_APP_API_URL;
+    const API_URL = process.env.VUE_APP_API_URL; // Assurez-vous que cette ligne est présente
+    console.log("API_URL:", API_URL);
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.checkMobile);
   },
   methods: {
+    getCurrentDate() {
+      // Retourne une date fixe pour les tests
+      const simulatedDate = new Date("2025-04-22T12:00:00");
+      return simulatedDate;
+    },
     checkMobile() {
       this.isMobile = window.innerWidth <= 768;
     },
@@ -363,15 +370,19 @@ export default {
       }
 
       try {
-        const response = await fetch(
-           `${API_URL}/api/predictions/${this.competitionId}/${day}`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await fetch(`${this.API_URL}/api/predictions`, {
+          method: method,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            predictions: this.predictionObject,
+            competitionDay: this.selectedDay,
+            competitionId: this.competitionId,
+            date: new Date().toISOString().split("T")[0],
+          }),
+        });
 
         if (response.ok) {
           const result = await response.json();
@@ -479,76 +490,76 @@ export default {
       );
     },
     async validatePrediction() {
-      const womenPredictions = this.predictions[this.selectedDay].women.reduce(
-        (acc, select, index) => {
-          const keys = [
-            "FirstPlace",
-            "SecondPlace",
-            "ThirdPlace1",
-            "ThirdPlace2",
-          ];
-          acc[`women${keys[index]}`] = select.value || "";
-          return acc;
-        },
-        {}
-      );
-
-      const menPredictions = this.predictions[this.selectedDay].men.reduce(
-        (acc, select, index) => {
-          const keys = [
-            "FirstPlace",
-            "SecondPlace",
-            "ThirdPlace1",
-            "ThirdPlace2",
-          ];
-          acc[`men${keys[index]}`] = select.value || "";
-          return acc;
-        },
-        {}
-      );
-
-      this.predictionObject = {
-        ...womenPredictions,
-        ...menPredictions,
-      };
-
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.error("Token manquant. Veuillez vous connecter.");
-        return;
-      }
-
-      try {
-        const method = this.predictionSubmitted ? "PUT" : "POST";
-        const response = await fetch(`${API_URL}/api/predictions`, {
-          method: method,
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            predictions: this.predictionObject,
-            competitionDay: this.selectedDay,
-            competitionId: this.competitionId,
-            date: new Date().toISOString().split("T")[0],
-          }),
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.warn("Erreur côté backend :", errorText);
-          return;
-        }
-
-        const result = await response.json();
-
-        this.predictionSubmitted = true;
-      } catch (error) {
-        console.error("Erreur réseau :", error);
-      }
+  const womenPredictions = this.predictions[this.selectedDay].women.reduce(
+    (acc, select, index) => {
+      const keys = [
+        "FirstPlace",
+        "SecondPlace",
+        "ThirdPlace1",
+        "ThirdPlace2",
+      ];
+      acc[`women${keys[index]}`] = select.value || "";
+      return acc;
     },
+    {}
+  );
+
+  const menPredictions = this.predictions[this.selectedDay].men.reduce(
+    (acc, select, index) => {
+      const keys = [
+        "FirstPlace",
+        "SecondPlace",
+        "ThirdPlace1",
+        "ThirdPlace2",
+      ];
+      acc[`men${keys[index]}`] = select.value || "";
+      return acc;
+    },
+    {}
+  );
+
+  this.predictionObject = {
+    ...womenPredictions,
+    ...menPredictions,
+  };
+
+  const token = localStorage.getItem("token");
+  if (!token) {
+    console.error("Token manquant. Veuillez vous connecter.");
+    return;
+  }
+
+  try {
+    const method = this.predictionSubmitted ? "PUT" : "POST";
+    const response = await fetch(`${this.API_URL}/api/predictions`, {
+      method: method,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        predictions: this.predictionObject,
+        competitionDay: this.selectedDay,
+        competitionId: this.competitionId,
+        date: new Date().toISOString().split("T")[0],
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.warn("Erreur côté backend :", errorText);
+      return;
+    }
+
+    const result = await response.json();
+
+    this.predictionSubmitted = true;
+  } catch (error) {
+    console.error("Erreur réseau :", error);
+  }
+},
     isCategoryActive(categoryId) {
-      const now = new Date();
+      const now = this.getCurrentDate();
       const categorySchedules = {
         "1,2,8,9": "2025-04-23T08:00:00",
         "3,10,11": "2025-04-24T08:00:00",
@@ -564,7 +575,6 @@ export default {
           startDate.setHours(8, 0, 0, 0);
 
           if (now >= startDate && now < endDate) {
-            console.log(`Catégorie ${categoryId} est active.`);
             return true;
           }
         }
