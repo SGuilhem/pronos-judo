@@ -96,24 +96,18 @@ export default {
     return {
       isMobile: null,
       results: {},
-      leaderboard: [
-      { username: "Alice", points: 45 },
-      { username: "Bob", points: 38 },
-      { username: "Charlie", points: 32 },
-      { username: "Diana", points: 28 },
-      { username: "Eve", points: 20 },
-    ],
+      leaderboard: [],
       users: [],
     };
   },
   mounted() {
     this.checkMobile();
     window.addEventListener("resize", this.checkMobile);
-    /* this.fetchUserPredictions().then(() => {
+    this.fetchUserPredictions().then(() => {
       this.fetchResults().then(() => {
         this.calculateUserScores();
       });
-    }); */
+    });
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.checkMobile);
