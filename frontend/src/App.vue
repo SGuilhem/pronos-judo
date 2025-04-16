@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col lg:flex-row">
+  <div class="app-layout">
     <SideMenu :links="links" :linkRoutes="linkRoutes" />
     <router-view
       v-bind="{
@@ -116,3 +116,28 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.app-layout {
+  display: flex;
+  flex-direction: column;
+}
+
+@media screen and (min-width: 1024px) and (max-height: 1366px){
+  .app-layout {
+    flex-direction: column;
+  }
+}
+
+@media screen and (min-width: 1024px) and (max-height: 768px) {
+  .app-layout {
+    flex-direction: column;
+  }
+}
+
+@media screen and (min-width: 1024px) and (min-height: 769px) {
+  .app-layout {
+    flex-direction: row;
+  }
+}
+</style>

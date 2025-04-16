@@ -60,7 +60,12 @@
           <p v-if="error" class="error font-bold text-red-600 pb-6">
             {{ error }}
           </p>
-          <button type="submit" class="border-2 bg-white text-slate-800 font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 px-4 py-2">Connexion</button>
+          <button
+            type="submit"
+            class="border-2 bg-white text-slate-800 font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 px-4 py-2"
+          >
+            Connexion
+          </button>
         </form>
       </div>
       <ul
@@ -80,7 +85,7 @@
       <button
         v-if="userLogged"
         type="submit"
-        class="mt-4 border-2 bg-white text-slate-800 font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 px-4 py-2"
+        class="my-4 border-2 bg-white text-slate-800 font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 px-4 py-2"
         @click="logout"
       >
         Déconnexion
@@ -89,7 +94,10 @@
     <div v-if="!userLogged" class="pt-6 text-center">
       <p>Vous n'avez pas de compte ?</p>
       <router-link :to="{ name: 'register' }">
-        <button @click="closeMenu" class="mt-2 border-2 bg-white text-slate-800 font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 px-4 py-2">
+        <button
+          @click="closeMenu"
+          class="mt-2 border-2 bg-white text-slate-800 font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 px-4 py-2"
+        >
           Créer un compte
         </button>
       </router-link>
@@ -136,7 +144,12 @@
           <p v-if="error" class="error font-bold text-red-600 pb-6">
             {{ error }}
           </p>
-          <button type="submit" class="border-2 bg-white text-slate-800 font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 px-4 py-2">Connexion</button>
+          <button
+            type="submit"
+            class="border-2 bg-white text-slate-800 font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 px-4 py-2"
+          >
+            Connexion
+          </button>
         </form>
       </div>
       <ul
@@ -166,7 +179,11 @@
     <div v-if="!userLogged" class="mt-4 pb-6 text-md text-center">
       <p>Vous n'avez pas de compte ?</p>
       <router-link :to="{ name: 'register' }">
-        <button class="mt-4 border-2 bg-white text-slate-800 font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 px-4 py-2">Créer un compte</button>
+        <button
+          class="mt-4 border-2 bg-white text-slate-800 font-bold border-slate-400 rounded-md transition-transform duration-200 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 px-4 py-2"
+        >
+          Créer un compte
+        </button>
       </router-link>
     </div>
   </div>
@@ -187,7 +204,7 @@ export default {
   },
   mounted() {
     this.checkLogin();
-    this.isMobile = window.innerWidth <= 768;
+    this.isMobile = this.checkIfMobile();
     window.addEventListener("resize", this.handleResize);
   },
   beforeDestroy() {
@@ -276,10 +293,13 @@ export default {
       }
     },
     handleResize() {
-      const newIsMobile = window.innerWidth <= 768;
+      const newIsMobile = this.checkIfMobile();
       if (newIsMobile !== this.isMobile) {
         this.isMobile = newIsMobile;
       }
+    },
+    checkIfMobile() {
+      return window.innerWidth <= 1024;
     },
   },
   computed: {
@@ -299,15 +319,23 @@ export default {
   display: none;
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 1024px) {
   .hamburger {
-    display: inline;
+    display: block;
     position: sticky;
     top: 0;
+  }
+  .side-menu-mobile {
+    display: block;
+  }
+
+  .side-menu-desktop {
+    display: none;
   }
 }
 
 .side-menu-desktop {
+  display:block;
   position: static;
   min-height: 100vh;
   width: 15%;
@@ -316,14 +344,14 @@ export default {
   padding: 20px;
 }
 
-@media screen and (max-width: 768px) {
-  .side-menu-desktop {
-    display: none;
-  }
-}
 @media screen and (min-width: 1200px) and (max-width: 1680px) {
   .side-menu-desktop {
     width: 20%;
+  }
+}
+@media screen and (min-width: 1024px) and (max-width: 1200px) {
+  .side-menu-desktop {
+    width: 30%;
   }
 }
 
@@ -337,12 +365,8 @@ export default {
   text-align: center;
   padding: 0;
   z-index: 100;
-}
-
-@media screen and (min-width: 769px) {
-  .side-menu-mobile {
-    display: none;
-  }
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .container {
