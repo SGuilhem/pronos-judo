@@ -11,17 +11,20 @@ const router = new VueRouter({
       {
         path: '/ongoing-tour',
         name: 'competition-en-cours',
-        component: OnGoingTour
+        component: OnGoingTour,
+        meta: { requiresAuth: true }
       },
       {
         path: '/ongoing-predictions',
         name: 'competition-en-cours',
-        component: OnGoingPredictionsRanking
+        component: OnGoingPredictionsRanking,
+        meta: { requiresAuth: true }
       },
       {
         path: '/archives',
         name: 'archives',
-        component: Archives
+        component: Archives,
+        meta: { requiresAuth: true }
       }
     ]
   })
