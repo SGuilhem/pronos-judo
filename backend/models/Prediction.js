@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const predictionSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  userName: { type: String, required: true },
   competitionDay: { type: Number, required: true },
   competitionId: { type: String, required: true },
   date: { type: String, required: true },

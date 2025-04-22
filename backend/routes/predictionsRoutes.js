@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
 const Prediction = require('../models/Prediction');
+const User = require('../models/User');""
 
 // Middleware check token
 function authenticateToken(req, res, next) {
@@ -31,17 +32,35 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 
   try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur introuvable.' });
+    }
+
+    const userName = user.username;
+    if (!userName) {
+      return res.status(400).json({ message: 'Le nom d\'utilisateur est manquant.' });
+    }
+
     const existing = await Prediction.findOne({ userId, competitionDay, competitionId });
 
     if (existing) {
       existing.predictions = mergePredictions(existing.predictions, predictions);
       existing.date = date || existing.date;
+      existing.userName = userName;
 
       await existing.save();
       return res.status(200).json({ message: 'Prédiction mise à jour avec succès.', prediction: existing });
     }
 
-    const newPrediction = new Prediction({ userId, competitionDay, competitionId, date, predictions });
+    const newPrediction = new Prediction({
+      userId,
+      userName,
+      competitionDay,
+      competitionId,
+      date,
+      predictions,
+    });
     await newPrediction.save();
 
     res.status(201).json({ message: 'Prédiction enregistrée avec succès.' });
@@ -61,6 +80,14 @@ router.put('/', authenticateToken, async (req, res) => {
   }
 
   try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur introuvable.' });
+    }
+
+    const userName = user.username;
+
+    
     const existing = await Prediction.findOne({ userId, competitionDay, competitionId });
 
     if (!existing) {
@@ -69,6 +96,7 @@ router.put('/', authenticateToken, async (req, res) => {
 
     existing.predictions = mergePredictions(existing.predictions, predictions);
     existing.date = date || existing.date;
+    existing.userName = userName;
 
     await existing.save();
     res.status(200).json({ message: 'Prédiction mise à jour avec succès.', prediction: existing });
