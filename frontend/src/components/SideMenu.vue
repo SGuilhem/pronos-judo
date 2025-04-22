@@ -25,7 +25,7 @@
         class="w-12 h-12 text-right"
       />
     </button>
-    <div class="align-center container">
+    <div class="align-center mobile-container">
       <img src="./../static/InterbudoLogo.png" class="m-auto size-48 py-4" />
       <div v-if="userLogged" class="text-2xl pt-4">
         <div>Bienvenue</div>
@@ -109,7 +109,7 @@
     v-show="!isMobile && !toggleMobileMenu"
     class="custom-bg-blue text-white side-menu-desktop"
   >
-    <div class="align-center container">
+    <div class="align-center desktop-container">
       <img src="./../static/InterbudoLogo.png" class="m-auto size-48 py-4" />
       <div v-if="userLogged" class="text-xl pt-4">
         <div>Bienvenue</div>
@@ -369,14 +369,11 @@ export default {
   -webkit-overflow-scrolling: touch;
 }
 
-.container {
-  margin-top: 25%;
+.desktop-container {
+  margin-top: 15%;
 }
-
-@media screen and (max-width: 768px) {
-  .container {
-    margin-top: 15%;
-  }
+.mobile-container {
+  margin-top: 15%;
 }
 
 .underline-gradient {

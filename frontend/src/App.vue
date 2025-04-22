@@ -135,7 +135,7 @@ export default {
   }
 }
 
-@media screen and (min-width: 1024px) and (min-height: 769px) {
+@media screen and (min-width: 1025px) and (min-height: 769px) {
   .app-layout {
     flex-direction: row;
   }

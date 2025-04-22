@@ -91,7 +91,7 @@
               </label>
               <select
                 :id="'womenPlace' + index"
-                class="prediction-select text-black px-2 lg:w-1/2 text-gray-400"
+                class="prediction-select text-black px-2 lg:w-1/2"
                 :class="{
                   'ml-3': !isMobile && index === 0,
                   'mt-2 mb-6 ml-0': isMobile,
@@ -139,7 +139,7 @@
               </label>
               <select
                 :id="'menPlace' + index"
-                class="prediction-select text-black px-2 lg:w-1/2 text-gray-400"
+                class="prediction-select text-black px-2 lg:w-1/2"
                 :class="{
                   'ml-3': !isMobile && index === 0,
                   'mt-2 mb-6 ml-0': isMobile,
