@@ -83,39 +83,48 @@
               :key="index"
               :class="isMobile ? 'flex flex-col m-auto' : 'flex flex-row my-2'"
             >
-            <div
-  :class="isMobile ? 'flex flex-col m-auto' : 'flex flex-row items-center my-2 w-full ml-10'"
->
-              <label :for="'womenPlace' + index" class="mx-4 text-xl underline">
-                {{ select.label }}
-              </label>
-              <select
-                :id="'womenPlace' + index"
-                class="prediction-select text-black px-2 lg:w-1/2"
-                :class="{
-                  'ml-3': !isMobile && index === 0,
-                  'mt-2 mb-6 ml-0': isMobile,
-                  'text-gray-400':
-                    !isCategoryActive(categoryMapping[selectedDay].men) ||
-                    isCategoryPredicted(categoryMapping[selectedDay].men),
-                }"
-                v-model="select.value"
-                required
-                :disabled="
-                  !isCategoryActive(categoryMapping[selectedDay].men) ||
-                  isCategoryPredicted(categoryMapping[selectedDay].men)
+              <div
+                :class="
+                  isMobile
+                    ? 'flex flex-col m-auto'
+                    : 'flex flex-row items-center my-2 w-full ml-10'
                 "
               >
-                <option value="" disabled>Choisissez une judoka</option>
-                <option
-                  v-for="(option, optIndex) in getWomenAvailableOptions(index)"
-                  :key="optIndex"
-                  :value="option"
+                <label
+                  :for="'womenPlace' + index"
+                  class="mx-4 text-xl underline"
                 >
-                  {{ option }}
-                </option>
-              </select>
-            </div>
+                  {{ select.label }}
+                </label>
+                <select
+                  :id="'womenPlace' + index"
+                  class="prediction-select text-black px-2 lg:w-1/2"
+                  :class="{
+                    'ml-3': !isMobile && index === 0,
+                    'mt-2 mb-6 ml-0': isMobile,
+                    'text-gray-400':
+                      !isCategoryActive(categoryMapping[selectedDay].men) ||
+                      isCategoryPredicted(categoryMapping[selectedDay].men),
+                  }"
+                  v-model="select.value"
+                  required
+                  :disabled="
+                    !isCategoryActive(categoryMapping[selectedDay].men) ||
+                    isCategoryPredicted(categoryMapping[selectedDay].men)
+                  "
+                >
+                  <option value="" disabled>Choisissez une judoka</option>
+                  <option
+                    v-for="(option, optIndex) in getWomenAvailableOptions(
+                      index
+                    )"
+                    :key="optIndex"
+                    :value="option"
+                  >
+                    {{ option }}
+                  </option>
+                </select>
+              </div>
             </div>
           </div>
           <div
@@ -131,38 +140,42 @@
               :key="index"
               :class="isMobile ? 'flex flex-col m-auto' : 'flex flex-row my-2'"
             >
-            <div
-  :class="isMobile ? 'flex flex-col m-auto' : 'flex flex-row items-center my-2 w-full ml-10'"
->
-              <label :for="'menPlace' + index" class="mx-4 text-xl underline">
-                {{ select.label }}
-              </label>
-              <select
-                :id="'menPlace' + index"
-                class="prediction-select text-black px-2 lg:w-1/2"
-                :class="{
-                  'ml-3': !isMobile && index === 0,
-                  'mt-2 mb-6 ml-0': isMobile,
-                  'text-gray-400':
-                    !isCategoryActive(categoryMapping[selectedDay].men) ||
-                    isCategoryPredicted(categoryMapping[selectedDay].men),
-                }"
-                v-model="select.value"
-                required
-                :disabled="
-                  !isCategoryActive(categoryMapping[selectedDay].men) ||
-                  isCategoryPredicted(categoryMapping[selectedDay].men)
+              <div
+                :class="
+                  isMobile
+                    ? 'flex flex-col m-auto'
+                    : 'flex flex-row items-center my-2 w-full ml-10'
                 "
               >
-                <option value="" disabled>Choisissez un judoka</option>
-                <option
-                  v-for="(option, optIndex) in getMenAvailableOptions(index)"
-                  :key="optIndex"
-                  :value="option"
+                <label :for="'menPlace' + index" class="mx-4 text-xl underline">
+                  {{ select.label }}
+                </label>
+                <select
+                  :id="'menPlace' + index"
+                  class="prediction-select text-black px-2 lg:w-1/2"
+                  :class="{
+                    'ml-3': !isMobile && index === 0,
+                    'mt-2 mb-6 ml-0': isMobile,
+                    'text-gray-400':
+                      !isCategoryActive(categoryMapping[selectedDay].men) ||
+                      isCategoryPredicted(categoryMapping[selectedDay].men),
+                  }"
+                  v-model="select.value"
+                  required
+                  :disabled="
+                    !isCategoryActive(categoryMapping[selectedDay].men) ||
+                    isCategoryPredicted(categoryMapping[selectedDay].men)
+                  "
                 >
-                  {{ option }}
-                </option>
-              </select>
+                  <option value="" disabled>Choisissez un judoka</option>
+                  <option
+                    v-for="(option, optIndex) in getMenAvailableOptions(index)"
+                    :key="optIndex"
+                    :value="option"
+                  >
+                    {{ option }}
+                  </option>
+                </select>
               </div>
             </div>
           </div>
@@ -505,6 +518,12 @@ export default {
       );
     },
     async validatePrediction() {
+      const categoryId = this.categoryMapping[this.selectedDay]?.men;
+      if (!this.isCategoryActive(categoryId)) {
+        console.warn("La catégorie n'est plus active pour les pronostics.");
+        return;
+      }
+
       const womenPredictions = this.predictions[this.selectedDay].women.reduce(
         (acc, select, index) => {
           const keys = [
@@ -567,6 +586,7 @@ export default {
         }
 
         const result = await response.json();
+        console.log("Pronostic soumis avec succès :", result.message);
 
         this.predictionSubmitted = true;
       } catch (error) {
@@ -672,8 +692,13 @@ export default {
       return womenValid && menValid;
     },
     predictionMessage() {
-      if (this.predictionSubmitted) {
-        return "Pronostique déjà effectué pour ce jour.";
+      if (
+        this.predictionSubmitted &&
+        this.isCategoryActive(this.categoryMapping[this.selectedDay]?.men)
+      ) {
+        return "Vous pouvez modifier votre pronostic tant que la catégorie est active.";
+      } else if (this.predictionSubmitted) {
+        return "Pronostic déjà effectué pour ce jour.";
       } else if (!this.isValidForm) {
         return "Veuillez remplir tous les champs pour valider votre pronostic.";
       } else if (!this.hasActiveCategories) {
