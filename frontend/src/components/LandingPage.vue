@@ -41,7 +41,7 @@
       <div class="pt-2 text-lg m-auto">
         - La veille de chaque journée de compétition, vous serez invités à faire
         vos pronostics pour les catégories du lendemain. <br />
-        - Vous pourrez les envoyer jusqu’à 8h (heure de Paris) le jour même.
+        - Vous pourrez les envoyer jusqu’au début de la journée de competition.
       </div>
       <h4
         class="text-2xl text-center lg:w-1/2 m-auto lg:pt-8 pt-4 pb-0"

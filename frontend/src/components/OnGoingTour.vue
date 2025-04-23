@@ -67,8 +67,7 @@
             disponibles
           </div>
           <div class="text-xl mt-4 underline lg:mx-0 mx-4">
-            🕒 Pronostics possibles dès la veille et jusqu’à 8h du jour de la
-            catégorie (heure de Paris).
+            🕒 Pronostics possibles dès la veille et jusqu’au début de la journée de competition.
           </div>
           <div
             :class="`women-prediction text-2xl mt-5 mb-2 flex align-left bold underline ${
@@ -103,14 +102,12 @@
                     'ml-3': !isMobile && index === 0,
                     'mt-2 mb-6 ml-0': isMobile,
                     'text-gray-400':
-                      !isCategoryActive(categoryMapping[selectedDay].men) ||
-                      isCategoryPredicted(categoryMapping[selectedDay].men),
+                      !isCategoryActive(categoryMapping[selectedDay].women)
                   }"
                   v-model="select.value"
                   required
                   :disabled="
-                    !isCategoryActive(categoryMapping[selectedDay].men) ||
-                    isCategoryPredicted(categoryMapping[selectedDay].men)
+                    !isCategoryActive(categoryMapping[selectedDay].women)
                   "
                 >
                   <option value="" disabled>Choisissez une judoka</option>
@@ -157,14 +154,12 @@
                     'ml-3': !isMobile && index === 0,
                     'mt-2 mb-6 ml-0': isMobile,
                     'text-gray-400':
-                      !isCategoryActive(categoryMapping[selectedDay].men) ||
-                      isCategoryPredicted(categoryMapping[selectedDay].men),
+                      !isCategoryActive(categoryMapping[selectedDay].men)
                   }"
                   v-model="select.value"
                   required
                   :disabled="
-                    !isCategoryActive(categoryMapping[selectedDay].men) ||
-                    isCategoryPredicted(categoryMapping[selectedDay].men)
+                    !isCategoryActive(categoryMapping[selectedDay].men)
                   "
                 >
                   <option value="" disabled>Choisissez un judoka</option>
@@ -518,11 +513,6 @@ export default {
       );
     },
     async validatePrediction() {
-      const categoryId = this.categoryMapping[this.selectedDay]?.men;
-      if (!this.isCategoryActive(categoryId)) {
-        console.warn("La catégorie n'est plus active pour les pronostics.");
-        return;
-      }
 
       const womenPredictions = this.predictions[this.selectedDay].women.reduce(
         (acc, select, index) => {
@@ -596,14 +586,15 @@ export default {
     isCategoryActive(categoryId) {
       const now = this.getCurrentDate();
       const categorySchedules = {
-        "1,2,8,9": "2025-04-23T08:00:00",
-        "3,10,11": "2025-04-24T08:00:00",
-        "12,4,5": "2025-04-25T08:00:00",
-        "13,14,6,7": "2025-04-26T08:00:00",
+        "1,2,8,9": "2025-04-23T10:30:00",
+        "3,10,11": "2025-04-24T10:30:00",
+        "12,4,5": "2025-04-25T10:30:00",
+        "13,14,6,7": "2025-04-26T10:30:00",
       };
 
       for (const [categories, endTime] of Object.entries(categorySchedules)) {
-        if (categories.split(",").includes(String(categoryId))) {
+        const categoryList = categories.split(",");
+        if (categoryList.includes(String(categoryId))) {
           const endDate = new Date(endTime);
           const startDate = new Date(endDate);
           startDate.setDate(endDate.getDate() - 1);
@@ -614,7 +605,6 @@ export default {
           }
         }
       }
-
       return false;
     },
     isCategoryPredicted(categoryId) {
