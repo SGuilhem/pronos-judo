@@ -207,8 +207,7 @@ export default {
 
       const fetchPromises = weightIds.map(async (weightId) => {
         if (cachedResults[`${this.competitionId}-${weightId}`]) {
-          results[weightId] =
-            cachedResults[`${this.competitionId}-${weightId}`];
+          results[weightId] = cachedResults[`${this.competitionId}-${weightId}`];
           return;
         }
 
@@ -216,6 +215,14 @@ export default {
           const response = await fetch(
             `https://data.ijf.org/api/get_json?access_token=&params%5Baction%5D=competition.competitors&params%5Bid_competition%5D=${this.competitionId}&params%5Bid_weight%5D=${weightId}`
           );
+
+          if (!response.ok) {
+            console.error(
+              `Erreur HTTP pour weightId ${weightId}: ${response.status}`
+            );
+            return;
+          }
+
           const data = await response.json();
 
           const categoryData =
@@ -239,7 +246,11 @@ export default {
         }
       });
 
-      await Promise.all(fetchPromises);
+      try {
+        await Promise.all(fetchPromises);
+      } catch (error) {
+        console.error("Erreur lors de l'exécution des appels API :", error);
+      }
 
       localStorage.setItem("competitionResults", JSON.stringify(cachedResults));
 
@@ -297,30 +308,35 @@ export default {
             firstPlace: eventResults.find(
               (competitor) => competitor.place === "1"
             )
-              ? `${
-                  eventResults.find((competitor) => competitor.place === "1")
-                    .family_name
-                } ${
-                  eventResults.find((competitor) => competitor.place === "1")
-                    .given_name
-                }`
+              ? this.normalizeName(
+                  `${
+                    eventResults.find((competitor) => competitor.place === "1")
+                      .family_name
+                  } ${
+                    eventResults.find((competitor) => competitor.place === "1")
+                      .given_name
+                  }`
+                )
               : null,
             secondPlace: eventResults.find(
               (competitor) => competitor.place === "2"
             )
-              ? `${
-                  eventResults.find((competitor) => competitor.place === "2")
-                    .family_name
-                } ${
-                  eventResults.find((competitor) => competitor.place === "2")
-                    .given_name
-                }`
+              ? this.normalizeName(
+                  `${
+                    eventResults.find((competitor) => competitor.place === "2")
+                      .family_name
+                  } ${
+                    eventResults.find((competitor) => competitor.place === "2")
+                      .given_name
+                  }`
+                )
               : null,
             thirdPlace: eventResults
               .filter((competitor) => competitor.place === "3")
-              .map(
-                (competitor) =>
+              .map((competitor) =>
+                this.normalizeName(
                   `${competitor.family_name} ${competitor.given_name}`
+                )
               ),
           };
 
@@ -346,11 +362,28 @@ export default {
               userPredictions[key].forEach((predictedThirdPlace) => {
                 if (actualResults.thirdPlace.includes(predictedThirdPlace)) {
                   score += 3;
+                } else if (
+                  predictedThirdPlace === actualResults.firstPlace ||
+                  predictedThirdPlace === actualResults.secondPlace
+                ) {
+                  score += 1;
                 }
               });
             } else {
               if (userPredictions[key] === actualResults[key]) {
                 score += 3;
+              } else if (
+                key === "firstPlace" &&
+                (userPredictions[key] === actualResults.secondPlace ||
+                  actualResults.thirdPlace.includes(userPredictions[key]))
+              ) {
+                score += 1;
+              } else if (
+                key === "secondPlace" &&
+                (userPredictions[key] === actualResults.firstPlace ||
+                  actualResults.thirdPlace.includes(userPredictions[key]))
+              ) {
+                score += 1;
               }
             }
           });

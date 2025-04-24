@@ -9,5 +9,14 @@ module.exports = defineConfig({
         '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': JSON.stringify(false),
       })
     ]
-  }
+  },
+  devServer: {
+    proxy: {
+      "^/api": {
+        target: "https://data.ijf.org",
+        changeOrigin: true,
+        pathRewrite: { "^/api": "" },
+      },
+    },
+  },
 })

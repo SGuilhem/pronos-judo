@@ -576,7 +576,6 @@ export default {
         }
 
         const result = await response.json();
-        console.log("Pronostic soumis avec succès :", result.message);
 
         this.predictionSubmitted = true;
       } catch (error) {
