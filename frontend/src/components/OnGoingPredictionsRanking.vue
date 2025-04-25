@@ -198,19 +198,12 @@ export default {
     },
     async fetchResults() {
       const results = {};
-      const cachedResults =
-        JSON.parse(localStorage.getItem("competitionResults")) || {};
 
       const weightIds = Object.values(this.competitionDays)
         .flatMap((day) => day.events.map((event) => this.getWeightId(event)))
         .filter(Boolean);
 
       const fetchPromises = weightIds.map(async (weightId) => {
-        if (cachedResults[`${this.competitionId}-${weightId}`]) {
-          results[weightId] = cachedResults[`${this.competitionId}-${weightId}`];
-          return;
-        }
-
         try {
           const response = await fetch(
             `https://data.ijf.org/api/get_json?access_token=&params%5Baction%5D=competition.competitors&params%5Bid_competition%5D=${this.competitionId}&params%5Bid_weight%5D=${weightId}`
@@ -235,8 +228,6 @@ export default {
 
           if (filteredCompetitors.length > 0) {
             results[weightId] = filteredCompetitors;
-            cachedResults[`${this.competitionId}-${weightId}`] =
-              filteredCompetitors;
           }
         } catch (error) {
           console.error(
@@ -251,8 +242,6 @@ export default {
       } catch (error) {
         console.error("Erreur lors de l'exécution des appels API :", error);
       }
-
-      localStorage.setItem("competitionResults", JSON.stringify(cachedResults));
 
       for (const day of this.competitionDays) {
         for (const event of day.events) {
@@ -356,47 +345,40 @@ export default {
               this.normalizeName(prediction.thirdPlace2),
             ],
           };
+          if (userPredictions.firstPlace === actualResults.firstPlace) {
+            score += 3;
+          } else if (
+            userPredictions.firstPlace === actualResults.secondPlace ||
+            actualResults.thirdPlace.includes(userPredictions.firstPlace)
+          ) {
+            score += 1;
+          }
 
-          Object.keys(userPredictions).forEach((key) => {
-            if (key === "thirdPlace") {
-              userPredictions[key].forEach((predictedThirdPlace) => {
-                if (actualResults.thirdPlace.includes(predictedThirdPlace)) {
-                  score += 3;
-                } else if (
-                  predictedThirdPlace === actualResults.firstPlace ||
-                  predictedThirdPlace === actualResults.secondPlace
-                ) {
-                  score += 1;
-                }
-              });
-            } else {
-              if (userPredictions[key] === actualResults[key]) {
-                score += 3;
-              } else if (
-                key === "firstPlace" &&
-                (userPredictions[key] === actualResults.secondPlace ||
-                  actualResults.thirdPlace.includes(userPredictions[key]))
-              ) {
-                score += 1;
-              } else if (
-                key === "secondPlace" &&
-                (userPredictions[key] === actualResults.firstPlace ||
-                  actualResults.thirdPlace.includes(userPredictions[key]))
-              ) {
-                score += 1;
-              }
+          if (userPredictions.secondPlace === actualResults.secondPlace) {
+            score += 3;
+          } else if (
+            userPredictions.secondPlace === actualResults.firstPlace ||
+            actualResults.thirdPlace.includes(userPredictions.secondPlace)
+          ) {
+            score += 1;
+          }
+
+          userPredictions.thirdPlace.forEach((predictedThirdPlace) => {
+            if (actualResults.thirdPlace.includes(predictedThirdPlace)) {
+              score += 3;
+            } else if (
+              predictedThirdPlace === actualResults.firstPlace ||
+              predictedThirdPlace === actualResults.secondPlace
+            ) {
+              score += 1;
             }
           });
         }
 
-        if (userScoresMap.has(user.username)) {
-          userScoresMap.set(
-            user.username,
-            userScoresMap.get(user.username) + score
-          );
-        } else {
-          userScoresMap.set(user.username, score);
-        }
+        userScoresMap.set(
+          user.username,
+          (userScoresMap.get(user.username) || 0) + score
+        );
       }
 
       this.leaderboard = Array.from(userScoresMap.entries())
@@ -404,7 +386,14 @@ export default {
         .sort((a, b) => b.points - a.points);
     },
     normalizeName(name) {
-      return name.replace(/\s*\(.*?\)\s*/g, "").trim();
+      if (!name) return "";
+      return name
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s*\(.*?\)\s*/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
     },
   },
   computed: {},
