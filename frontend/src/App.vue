@@ -11,6 +11,8 @@
           competitionName,
           formattedStartingDay,
           formattedEndingDay,
+          endingDay,
+          startingDay,
           competitions,
         }),
       }"
@@ -50,7 +52,7 @@ export default {
         { day: 6, events: ["Women -78kg", "Men -100kg"] },
         { day: 7, events: ["Women +78kg", "Men +100kg"] },
       ],
-      competitionId: 2926,
+      competitionId: 2877,
       currentCompetitionDay: null,
       currentFormattedDate: this.formatDate(new Date()),
       competitions: [],
@@ -93,6 +95,8 @@ export default {
         this.endingDay = data?.date_to || null;
         this.formattedStartingDay = this.formatDate(data?.date_from);
         this.formattedEndingDay = this.formatDate(data?.date_to);
+        console.log("this.startingDay", this.startingDay);
+        console.log("this.endingDay", this.endingDay);
       } catch (error) {
         console.error(
           "Erreur lors de la récupération de la compétition :",
@@ -121,6 +125,10 @@ export default {
 .app-layout {
   display: flex;
   flex-direction: column;
+}
+
+* {
+  font-family: 'Poppins', sans-serif !important;
 }
 
 @media screen and (min-width: 1024px) and (max-height: 1366px){

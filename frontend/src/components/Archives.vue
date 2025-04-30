@@ -1,6 +1,8 @@
 <template>
   <div class="lg:w-full flex-col text-center">
-    <h1 class="lg:text-5xl text-4xl underline custom-blue font-bold lg:py-16 py-8">
+    <h1
+      class="lg:text-5xl text-4xl underline custom-blue font-bold lg:py-16 py-8"
+    >
       Interbudo Pronos
     </h1>
     <h4 class="text-2xl text-center lg:w-1/2 lg:px-0 px-6 m-auto lg:pb-6 pb-4">
@@ -9,49 +11,78 @@
 
     <div class="text-2xl text-left lg:my-4 lg:mx-20">
       <ul>
-        <li v-for="(competition, index) in archivedCompetitions" :key="competition.competitionId" class="event-item">
-          <div @click="toggleEvent(index)"
-            class="custom-bg-blue rounded-lg text-white event-title bold cursor-pointer lg:mx-0 mx-5 my-3 py-2 pl-4 flex justify-between items-center">
+        <li
+          v-for="(competition, index) in archivedCompetitions"
+          :key="competition.competitionId"
+          class="event-item"
+        >
+          <div
+            @click="toggleEvent(index)"
+            class="custom-bg-blue rounded-lg text-white event-title bold cursor-pointer lg:mx-0 mx-5 my-3 py-2 pl-4 flex justify-between items-center"
+          >
             <span>
               <span class="font-bold text-2xl underline">{{
                 competition.title
-                }}</span>
+              }}</span>
               du {{ competition.date_from }} au {{ competition.date_to }}
             </span>
-            <span :class="activeEventIndex === index ? 'rotate-180' : ''"
-              class="transition-transform duration-300 lg:mr-6 mr-4">
+            <span
+              :class="activeEventIndex === index ? 'rotate-180' : ''"
+              class="transition-transform duration-300 lg:mr-6 mr-4"
+            >
               ▼
             </span>
           </div>
-          <div v-if="activeEventIndex === index" :class="`${isMobile ? 'flex justify-center' : ''
-            } event-details transition-all duration-300 overflow-hidden`">
+          <div
+            v-if="activeEventIndex === index"
+            :class="`${
+              isMobile ? 'flex justify-center' : ''
+            } event-details transition-all duration-300 overflow-hidden`"
+          >
             <div>
-              <table class="lg:w-full w-auto text-left border-collapse border border-gray-300 my-6">
+              <table
+                class="lg:w-full w-auto text-left border-collapse border border-gray-300 my-6"
+              >
                 <thead>
                   <tr>
-                    <th class="border w-1/8 text-base border-gray-300 px-4 py-2 custom-bg-blue text-white">
+                    <th
+                      class="border w-1/8 text-base border-gray-300 px-4 py-2 custom-bg-blue text-white"
+                    >
                       Position
                     </th>
-                    <th class="border w-3/8 text-base border-gray-300 px-4 py-2 custom-bg-blue text-white">
+                    <th
+                      class="border w-3/8 text-base border-gray-300 px-4 py-2 custom-bg-blue text-white"
+                    >
                       Utilisateur
                     </th>
-                    <th class="border w-3/8 text-base border-gray-300 px-4 py-2 custom-bg-blue text-white">
+                    <th
+                      class="border w-3/8 text-base border-gray-300 px-4 py-2 custom-bg-blue text-white"
+                    >
                       Points cumulés
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(user, index) in competition.leaderboard" :key="index">
-                    <td class="border w-1/8 border-gray-300 px-4 py-2 text-center">
+                  <tr
+                    v-for="(user, index) in competition.leaderboard"
+                    :key="index"
+                  >
+                    <td
+                      class="border w-1/8 border-gray-300 px-4 py-2 text-center"
+                    >
                       <span v-if="index === 0">🥇</span>
                       <span v-else-if="index === 1">🥈</span>
                       <span v-else-if="index === 2">🥉</span>
                       <span v-else>{{ index + 1 }}</span>
                     </td>
-                    <td class="border w-3/8 border-gray-300 px-4 py-2 text-center">
+                    <td
+                      class="border w-3/8 border-gray-300 px-4 py-2 text-center"
+                    >
                       {{ user.username }}
                     </td>
-                    <td class="border w-3/8 border-gray-300 px-4 py-2 text-center">
+                    <td
+                      class="border w-3/8 border-gray-300 px-4 py-2 text-center"
+                    >
                       {{ user.points }} pts
                     </td>
                   </tr>
@@ -79,6 +110,7 @@ export default {
     this.isMobile = window.innerWidth <= 768;
     window.addEventListener("resize", this.checkMobile);
     this.fetchArchivedCompetitions().then(() => {
+      console.log(this.archivedCompetitions);
     });
   },
   methods: {
@@ -97,7 +129,13 @@ export default {
           );
         }
         const data = await response.json();
-        this.archivedCompetitions = data;
+        this.archivedCompetitions = data.sort((a, b) => {
+          const [day, month, year] = a.date_to.split("/");
+          const dateA = new Date(`${year}-${month}-${day}`);
+          const [dayB, monthB, yearB] = b.date_to.split("/");
+          const dateB = new Date(`${yearB}-${monthB}-${dayB}`);
+          return dateB - dateA;
+        });
       } catch (error) {
         console.error(error);
       }

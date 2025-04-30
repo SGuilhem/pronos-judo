@@ -91,6 +91,14 @@ export default {
       type: String,
       required: true,
     },
+    startingDay: {
+      type: String,
+      required: true,
+    },
+    endingDay: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     return {
@@ -106,6 +114,7 @@ export default {
     this.fetchUserPredictions().then(() => {
       this.fetchResults().then(() => {
         this.calculateUserScores();
+        this.archiveLeaderboard();
       });
     });
   },
@@ -395,8 +404,53 @@ export default {
         .replace(/\s+/g, " ")
         .trim();
     },
+    async archiveLeaderboard() {
+      const today = new Date();
+      const competitionEndDate = new Date(this.endingDay);
+      if (today > competitionEndDate) {
+        try {
+          const API_URL = process.env.VUE_APP_API_URL;
+          const token = localStorage.getItem("token");
+          if (!token) {
+            console.error("Token manquant. Veuillez vous connecter.");
+            return;
+          }
+
+          const response = await fetch(`${API_URL}/api/archived-competitions`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              competitionId: this.competitionId,
+              competitionName: this.competitionName,
+              leaderboard: this.leaderboard,
+              startingDay: this.startingDay,
+              endingDay: this.endingDay,
+            }),
+          });
+          console.log("body", {
+            competitionId: this.competitionId,
+            competitionName: this.competitionName,
+            leaderboard: this.leaderboard,
+            startingDay: this.startingDay,
+            endingDay: this.endingDay,
+          });
+
+          if (!response.ok) {
+            throw new Error(
+              `Erreur lors de l'archivage : ${response.statusText}`
+            );
+          }
+
+          console.log("Leaderboard archivé avec succès !");
+        } catch (error) {
+          console.error("Erreur lors de l'archivage du leaderboard :", error);
+        }
+      }
+    },
   },
-  computed: {},
 };
 </script>
 
