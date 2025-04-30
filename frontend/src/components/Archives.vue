@@ -109,9 +109,7 @@ export default {
   mounted() {
     this.isMobile = window.innerWidth <= 768;
     window.addEventListener("resize", this.checkMobile);
-    this.fetchArchivedCompetitions().then(() => {
-      console.log(this.archivedCompetitions);
-    });
+    this.fetchArchivedCompetitions()
   },
   methods: {
     async fetchArchivedCompetitions() {

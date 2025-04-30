@@ -95,8 +95,6 @@ export default {
         this.endingDay = data?.date_to || null;
         this.formattedStartingDay = this.formatDate(data?.date_from);
         this.formattedEndingDay = this.formatDate(data?.date_to);
-        console.log("this.startingDay", this.startingDay);
-        console.log("this.endingDay", this.endingDay);
       } catch (error) {
         console.error(
           "Erreur lors de la récupération de la compétition :",

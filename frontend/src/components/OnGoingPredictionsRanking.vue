@@ -426,16 +426,9 @@ export default {
               competitionId: this.competitionId,
               competitionName: this.competitionName,
               leaderboard: this.leaderboard,
-              startingDay: this.startingDay,
-              endingDay: this.endingDay,
+              startingDay: this.formatDateToDDMMYYYY(this.startingDay),
+              endingDay: this.formatDateToDDMMYYYY(this.endingDay),
             }),
-          });
-          console.log("body", {
-            competitionId: this.competitionId,
-            competitionName: this.competitionName,
-            leaderboard: this.leaderboard,
-            startingDay: this.startingDay,
-            endingDay: this.endingDay,
           });
 
           if (!response.ok) {
@@ -443,13 +436,18 @@ export default {
               `Erreur lors de l'archivage : ${response.statusText}`
             );
           }
-
-          console.log("Leaderboard archivé avec succès !");
         } catch (error) {
           console.error("Erreur lors de l'archivage du leaderboard :", error);
         }
       }
     },
+    formatDateToDDMMYYYY(date) {
+    const parsedDate = new Date(date);
+    const day = String(parsedDate.getDate()).padStart(2, "0");
+    const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
+    const year = parsedDate.getFullYear();
+    return `${day}/${month}/${year}`;
+  },
   },
 };
 </script>
