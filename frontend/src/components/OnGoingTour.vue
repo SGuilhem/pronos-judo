@@ -585,26 +585,29 @@ export default {
     isCategoryActive(categoryId) {
       const now = this.getCurrentDate();
       const categorySchedules = {
-        "1,2,8,9": "2025-04-23T10:30:00",
-        "3,10,11": "2025-04-24T10:30:00",
-        "12,4,5": "2025-04-25T10:30:00",
-        "13,14,6,7": "2025-04-26T10:30:00",
+        "1,8": "2025-06-13T10:30:00",
+        "2,9": "2025-06-14T10:30:00", 
+        "3,10": "2025-06-15T10:30:00",
+        "4,11": "2025-06-16T10:30:00",
+        "5,12": "2025-06-17T10:30:00",
+        "6,13": "2025-06-18T10:30:00",
+        "7,14": "2025-06-19T10:30:00",
       };
 
       for (const [categories, endTime] of Object.entries(categorySchedules)) {
-        const categoryList = categories.split(",");
-        if (categoryList.includes(String(categoryId))) {
-          const endDate = new Date(endTime);
-          const startDate = new Date(endDate);
-          startDate.setDate(endDate.getDate() - 1);
-          startDate.setHours(8, 0, 0, 0);
+      const categoryList = categories.split(",");
+      if (categoryList.includes(String(categoryId))) {
+        const endDate = new Date(endTime);
+        const startDate = new Date(endDate);
+        startDate.setDate(endDate.getDate() - 1);
+        startDate.setHours(8, 0, 0, 0);
 
-          if (now >= startDate && now < endDate) {
-            return true;
-          }
+        if (now >= startDate && now < endDate) {
+          return true;
         }
       }
-      return false;
+    }
+    return false;
     },
     isCategoryPredicted(categoryId) {
       if (!this.predictionObject || !this.predictionObject.predictions) {
