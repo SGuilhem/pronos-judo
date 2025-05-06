@@ -1,9 +1,14 @@
 <template>
   <div class="w-full flex-col text-center">
     <h1
-      class="lg:text-5xl text-3xl underline custom-blue font-bold lg:py-16 py-8"
+      class="lg:text-5xl text-3xl underline custom-blue font-bold lg:pt-16 lg:pb-12 py-8"
     >
       {{ competitionName }}
+    </h1>
+    <h1 v-if="countDown > 0"
+      class="lg:text-5xl text-3xl underline custom-blue font-bold lg:pb-8 pb-8"
+    >
+      J-{{ countDown }}
     </h1>
     <div>
       <div
@@ -25,7 +30,7 @@
       </div>
     </div>
 
-    <div class="text-2xl text-center lg:w-1/2 lg:px-0 px-6 m-auto lg:pb-6 pb-0">
+    <div class="text-2xl text-center lg:w-1/2 lg:px-0 px-6 m-auto lg:pb-6 pb-0 lg:mt-8 mt-6">
       <div class="button-container mb-4">
         <button
           v-for="day in days"
@@ -233,6 +238,10 @@ export default {
     },
     formattedEndingDay: {
       type: String,
+      required: true,
+    },
+    countDown: {
+      type: Number,
       required: true,
     },
   },
@@ -584,6 +593,8 @@ export default {
     },
     isCategoryActive(categoryId) {
       const now = this.getCurrentDate();
+
+      // World Championships Config
       const categorySchedules = {
         "1,8": "2025-06-13T10:30:00",
         "2,9": "2025-06-14T10:30:00", 
@@ -593,6 +604,12 @@ export default {
         "6,13": "2025-06-18T10:30:00",
         "7,14": "2025-06-19T10:30:00",
       };
+
+      // Grand Slam Config
+      /* 
+      "1,2,3,8,9,10,11": "2025-02-01T09:30:00",
+      "4,,5,6,7,12,13,14": "2025-02-02T09:30:00",
+      */
 
       for (const [categories, endTime] of Object.entries(categorySchedules)) {
       const categoryList = categories.split(",");

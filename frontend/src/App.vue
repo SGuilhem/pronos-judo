@@ -14,6 +14,7 @@
           endingDay,
           startingDay,
           competitions,
+          countDown
         }),
       }"
     />
@@ -61,6 +62,7 @@ export default {
       endingDay: null,
       formattedStartingDay: null,
       formattedEndingDay: null,
+      countDown: null,
     };
   },
   mounted() {
@@ -70,9 +72,11 @@ export default {
       if (!this.startingDay) return;
 
       const startingDate = new Date(this.startingDay);
-      const diffInMs = today - startingDate;
-      const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 
+      const diffInMs = startingDate - today;
+      this.countDown = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+
+      const diffInDays = Math.floor((today - startingDate) / (1000 * 60 * 60 * 24));
       if (diffInDays >= 0 && diffInDays < this.competitionDays.length) {
         this.currentCompetitionDay = diffInDays + 1;
       } else {

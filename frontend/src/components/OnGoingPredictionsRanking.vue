@@ -1,14 +1,31 @@
 <template>
   <div class="w-full flex-col text-center">
     <h1
-      class="lg:text-5xl text-4xl underline custom-blue font-bold lg:py-16 pt-8 lg:mx-0 mx-1"
+      class="lg:text-5xl text-3xl underline custom-blue font-bold lg:pt-16 lg:pb-12 py-8"
     >
       {{ competitionName }}
     </h1>
-    <div
-      class="lg:text-3xl text-2xl underline custom-blue font-bold lg:pt-4 py-8"
+    <h1 v-if="countDown > 0"
+      class="lg:text-5xl text-3xl underline custom-blue font-bold lg:pb-8 pb-8"
     >
-      du {{ formattedStartingDay }} au {{ formattedEndingDay }}
+      J-{{ countDown }}
+    </h1>
+    <div
+       class="lg:text-3xl text-2xl underline custom-blue font-bold lg:pt-4 lg:pb-8 pb-8 pt-2"
+    >
+    <template
+          v-if="
+            currentCompetitionDay && competitionDays[currentCompetitionDay - 1]
+          "
+        >
+          En cours - Jour {{ currentCompetitionDay }} :
+          {{ competitionDays[currentCompetitionDay - 1].events[0] }} &
+          {{ competitionDays[currentCompetitionDay - 1].events[1] }}
+        </template>
+        <template v-else>
+          Début le {{ formattedStartingDay }} et fin le
+          {{ formattedEndingDay }}</template
+        >
     </div>
     <div class="text-2xl text-center lg:w-1/2 lg:px-0 px-6 m-auto lg:pb-6 pb-0">
       <div class="day-title mb-1 lg:mt-8 mt-6">Classement en cours</div>
@@ -97,6 +114,10 @@ export default {
     },
     endingDay: {
       type: String,
+      required: true,
+    },
+    countDown: {
+      type: Number,
       required: true,
     },
   },
