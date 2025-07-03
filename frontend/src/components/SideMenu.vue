@@ -3,7 +3,7 @@
   <div class="hamburger custom-bg-blue text-white z-10">
     <button @click="toggleMenu">
       <img
-        src="./../static/svg/hamburger.svg"
+        src="/svg/hamburger.svg"
         alt="Menu"
         class="w-16 h-16 p-3 align-left"
       />
@@ -20,13 +20,13 @@
       class="absolute p-4 right-4 z-50 text-white text-xl"
     >
       <img
-        src="./../static/svg/cross-close.svg"
+        src="/svg/cross-close.svg"
         alt="Menu"
         class="w-12 h-12 text-right"
       />
     </button>
     <div class="align-center mobile-container">
-      <img src="./../static/InterbudoLogo.png" class="m-auto size-48 py-4" />
+      <img src="/InterbudoLogo.png" class="m-auto size-48 py-4" />
       <div v-if="userLogged" class="text-2xl pt-4">
         <div>Bienvenue</div>
         <div v-if="userName" class="text-3xl font-bold">{{ userName }}</div>
@@ -91,7 +91,7 @@
         Déconnexion
       </button>
     </div>
-    <div v-if="!userLogged" class="pt-6 text-center">
+    <div v-if="!userLogged" class="pt-6 text-center  mb-6">
       <p>Vous n'avez pas de compte ?</p>
       <router-link :to="{ name: 'register' }">
         <button
@@ -110,7 +110,7 @@
     class="custom-bg-blue text-white side-menu-desktop"
   >
     <div class="align-center desktop-container">
-      <img src="./../static/InterbudoLogo.png" class="m-auto size-48 py-4" />
+      <img src="/InterbudoLogo.png" class="m-auto size-48 py-4" />
       <div v-if="userLogged" class="text-xl pt-4">
         <div>Bienvenue</div>
         <div v-if="userName" class="text-2xl font-bold">{{ userName }}</div>
@@ -374,6 +374,24 @@ export default {
 }
 .mobile-container {
   margin-top: 15%;
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+form {
+  width: 100%;
+  max-width: 320px;
+}
+
+.log-input {
+  width: 100%;
+  max-width: 320px;
+  min-width: 240px;
+  box-sizing: border-box;
 }
 
 .underline-gradient {

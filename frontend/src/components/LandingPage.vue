@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full flex-col text-center">
+  <div class="w-full flex-col text-center px-2">
     <h1
       class="lg:text-5xl text-4xl underline custom-blue font-bold lg:py-16 py-8"
     >

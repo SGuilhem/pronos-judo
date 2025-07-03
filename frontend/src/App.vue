@@ -128,26 +128,24 @@ export default {
   display: flex;
   flex-direction: column;
 }
+.app {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
 
 * {
   font-family: 'Poppins', sans-serif !important;
 }
 
-@media screen and (min-width: 1024px) and (max-height: 1366px){
-  .app-layout {
-    flex-direction: column;
-  }
-}
-
-@media screen and (min-width: 1024px) and (max-height: 768px) {
-  .app-layout {
-    flex-direction: column;
-  }
-}
-
-@media screen and (min-width: 1025px) and (min-height: 769px) {
+@media screen and (min-width: 1024px) and (min-height: 768px) {
   .app-layout {
     flex-direction: row;
+  }
+}
+
+@media screen and (min-height: 0px) and (max-height: 767px) {
+  .app-layout {
+    flex-direction: column;
   }
 }
 </style>
