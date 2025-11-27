@@ -18,14 +18,15 @@ const app = express();
 
 connectDB();
 
-mongoose.connect(process.env.MONGO_URI)
+/* mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('MongoDB connecté'))
     .catch(err => console.log('Erreur de connexion MongoDB :', err));
+*/
 
 // Middleware
 app.use(express.json());
 app.use(cors({
-    origin: 'http://localhost:8080',
+    origin: 'true',
     credentials: true
 }));
 
