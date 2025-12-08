@@ -132,14 +132,10 @@ export default {
 @media screen and (min-width: 1024px) {
   .app-layout {
     flex-direction: row;
+    min-height: 100vh;
   }
 }
-
-.app {
-  min-height: 100vh;
-  min-height: 100dvh;
-}
-
+  
 * {
   font-family: 'Poppins', sans-serif !important;
 }
