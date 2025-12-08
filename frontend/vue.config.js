@@ -3,6 +3,12 @@ const webpack = require('webpack');
 module.exports = defineConfig({
   transpileDependencies: true,
   lintOnSave: false,
+   pages: {
+    index: {
+      entry: 'src/main.js',
+      title: 'Pronos Judo'
+    }
+  },
   configureWebpack: {
     plugins: [
       new webpack.DefinePlugin({
