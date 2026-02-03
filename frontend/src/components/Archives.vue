@@ -6,7 +6,7 @@
       Interbudo Pronos
     </h1>
     <h4 class="text-2xl text-center lg:w-1/2 lg:px-0 px-6 m-auto lg:pb-6 pb-4">
-      Ici seront archivés les précédents pronostiques qui auront eu lieu:
+      Ici seront archivés les précédents pronostics qui auront eu lieu:
     </h4>
 
     <div class="text-2xl text-left lg:my-4 lg:mx-20">

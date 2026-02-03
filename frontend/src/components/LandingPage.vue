@@ -6,7 +6,7 @@
       Interbudo Pronos
     </h1>
     <h4 class="text-2xl text-center lg:w-3/4 lg:px-0 px-6 m-auto lg:pb-4 pb-0 underline">
-      Bienvenue sur la page de pronostiques Interbudo!
+      Bienvenue sur la page de pronostics Interbudo!
     </h4>
     <div class="pt-2 pb-8 text-lg lg:w-3/4 lg:px-0 px-8 m-auto">
       <span>

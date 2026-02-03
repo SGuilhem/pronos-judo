@@ -34,7 +34,7 @@
         <div class="day-title mb-1 mt-8">{{ womenEvent }} & {{ menEvent }}</div>
         <div class="prediction-container my-4">
           <div class="women-prediction my-3 ml-4 flex align-left">
-            Pronostiques Femmes:
+            Pronostics Femmes:
           </div>
           <div class="pb-2 flex flex-col mt-4 ml-4">
             <div :class="`womenFirstPlace ${isMobile ? 'flex flex-col m-auto' : 'flex flex-row my-2'}`">
@@ -75,7 +75,7 @@
             </div>
           </div>
           <div class="men-prediction my-3 ml-4 flex align-left">
-            Pronostiques Hommes:
+            Pronostics Hommes:
           </div>
           <div class="pb-2 flex flex-col mt-4 ml-4">
             <div :class="`menFirstPlace ${isMobile ? 'flex flex-col m-auto' : 'flex flex-row my-2'}`">
