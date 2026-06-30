@@ -81,7 +81,8 @@ exports.register = async (req, res) => {
     return res.status(400).json({
       message: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, un chiffre et un symbole."
     });
-  };
+  }
+};
 
 exports.verifyToken = (req, res) => {
     const token = req.body.token;
