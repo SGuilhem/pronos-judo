@@ -1,497 +1,506 @@
 <template>
-  <div class="w-full flex-col text-center">
-    <h1
-      class="lg:text-5xl text-3xl underline custom-blue font-bold lg:pt-16 lg:pb-12 py-8"
-    >
-      {{ competitionName }}
-    </h1>
-    <h1 v-if="countDown > 0"
-      class="lg:text-5xl text-3xl underline custom-blue font-bold lg:pb-8 pb-8"
-    >
-      J-{{ countDown }}
-    </h1>
-    <div
-       class="lg:text-3xl text-2xl underline custom-blue font-bold lg:pt-4 lg:pb-8 pb-8 pt-2"
-    >
-    <template
-          v-if="
-            currentCompetitionDay && competitionDays[currentCompetitionDay - 1]
-          "
-        >
-          En cours - Jour {{ currentCompetitionDay }} :
-          {{ competitionDays[currentCompetitionDay - 1].events[0] }} &
-          {{ competitionDays[currentCompetitionDay - 1].events[1] }}
-        </template>
+  <div class="ranking-page">
+
+    <!-- Hero -->
+    <div class="ranking-hero">
+      <div class="hero-inner">
+        <span class="hero-tag">🏆 Classement en cours</span>
+        <h1 class="hero-title">{{ competitionName }}</h1>
+
+        <div v-if="countDown > 0" class="countdown-badge">
+          <span class="countdown-label">Début dans</span>
+          <span class="countdown-value">J-{{ countDown }}</span>
+        </div>
+
+        <div class="day-info-bar">
+          <template v-if="currentCompetitionDay && currentDayFormat">
+            <span class="day-badge active">En cours</span>
+            <span class="day-text">
+              Jour {{ currentCompetitionDay }} —
+              {{ currentDayFormat.weightIds.map(id => CATEGORIES[id].label).join(' & ') }}
+            </span>
+          </template>
+          <template v-else>
+            <span class="day-badge">Dates</span>
+            <span class="day-text">{{ formattedStartingDay }} → {{ formattedEndingDay }}</span>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaderboard -->
+    <section class="ranking-section">
+      <div class="section-inner">
+
+        <!-- Empty state -->
+        <div v-if="leaderboard.length === 0" class="empty-card">
+          <div class="empty-icon">📊</div>
+          <p class="empty-title">Aucun résultat à afficher</p>
+          <p class="empty-sub">Les scores apparaîtront une fois les premières prédictions validées.</p>
+        </div>
+
         <template v-else>
-          Début le {{ formattedStartingDay }} et fin le
-          {{ formattedEndingDay }}</template
-        >
-    </div>
-    <div class="text-2xl text-center lg:w-1/2 lg:px-0 px-6 m-auto lg:pb-6 pb-0">
-      <div class="day-title mb-1 lg:mt-8 mt-6">Classement en cours</div>
-      <div v-if="leaderboard.length === 0" class="text-red-500 mt-4">
-        Aucun résultat à afficher pour le moment.
+          <!-- Podium top 3 -->
+          <div class="podium-row">
+            <!-- 2ème à gauche -->
+            <div v-if="leaderboard[1]" class="podium-card silver" style="--i:1">
+              <div class="medal">🥈</div>
+              <div class="podium-rank">2ème</div>
+              <div class="podium-username">{{ leaderboard[1].username }}</div>
+              <div class="podium-points">{{ leaderboard[1].points }} pts</div>
+            </div>
+            <!-- 1er au centre (surélevé) -->
+            <div class="podium-card gold" style="--i:0">
+              <div class="medal">🥇</div>
+              <div class="podium-rank">1er</div>
+              <div class="podium-username">{{ leaderboard[0].username }}</div>
+              <div class="podium-points">{{ leaderboard[0].points }} pts</div>
+            </div>
+            <!-- 3ème à droite -->
+            <div v-if="leaderboard[2]" class="podium-card bronze" style="--i:2">
+              <div class="medal">🥉</div>
+              <div class="podium-rank">3ème</div>
+              <div class="podium-username">{{ leaderboard[2].username }}</div>
+              <div class="podium-points">{{ leaderboard[2].points }} pts</div>
+            </div>
+          </div>
+
+          <!-- Rang 4 et au-delà -->
+          <div v-if="leaderboard.length > 3" class="rankings-list">
+            <div
+              v-for="(user, index) in leaderboard.slice(3)"
+              :key="user.username"
+              class="ranking-row"
+              :style="`--i:${index}`"
+            >
+              <span class="rank-number">{{ index + 4 }}</span>
+              <span class="rank-username">{{ user.username }}</span>
+              <span class="rank-points">{{ user.points }} pts</span>
+            </div>
+          </div>
+        </template>
+
       </div>
-      <div v-else :class="`${isMobile ? '' : 'mx-4'} mt-10 flex align-left`">
-        <table
-          class="w-full border-collapse border border-gray-300 lg:text-lg text-base text-center font-bold"
-        >
-          <thead>
-            <tr>
-              <th
-                class="border border-gray-300 px-2 lg:px-4 py-4 bg-gray-100 w-1/12 lg:w-1/12"
-              >
-                Position
-              </th>
-              <th
-                class="border border-gray-300 px-2 lg:px-4 py-4 bg-gray-100 w-6/12 lg:w-7/12"
-              >
-                Utilisateur
-              </th>
-              <th
-                class="border border-gray-300 px-2 lg:px-4 py-4 bg-gray-100 w-5/12 lg:w-4/12"
-              >
-                Points cumulés
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(user, index) in leaderboard" :key="index">
-              <td
-                class="border border-gray-300 px-2 lg:px-4 py-4 w-1/12 lg:w-1/12"
-              >
-                {{ index + 1 }}
-              </td>
-              <td
-                class="border border-gray-300 px-2 lg:px-4 py-4 w-6/12 lg:w-7/12"
-              >
-                {{ user.username }}
-              </td>
-              <td
-                class="border border-gray-300 px-2 lg:px-4 py-4 w-5/12 lg:w-4/12"
-              >
-                {{ user.points }} pts
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    </section>
+
   </div>
 </template>
 
-<script>
-export default {
-  name: "OnGoingPredictionsRanking",
-  props: {
-    competitionDays: {
-      type: Object,
-      required: true,
-    },
-    currentCompetitionDay: {
-      type: Number,
-      required: true,
-    },
-    competitionName: {
-      type: String,
-      required: true,
-    },
-    competitionId: {
-      type: Number,
-      required: true,
-    },
-    formattedStartingDay: {
-      type: String,
-      required: true,
-    },
-    formattedEndingDay: {
-      type: String,
-      required: true,
-    },
-    startingDay: {
-      type: String,
-      required: true,
-    },
-    endingDay: {
-      type: String,
-      required: true,
-    },
-    countDown: {
-      type: Number,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      isMobile: null,
-      results: {},
-      leaderboard: [],
-      users: [],
-    };
-  },
-  mounted() {
-    this.checkMobile();
-    window.addEventListener("resize", this.checkMobile);
-    this.fetchUserPredictions().then(() => {
-      this.fetchResults().then(() => {
-        this.calculateUserScores();
-        this.archiveLeaderboard();
-      });
-    });
-  },
-  beforeDestroy() {
-    window.removeEventListener("resize", this.checkMobile);
-  },
-  methods: {
-    checkMobile() {
-      this.isMobile = window.innerWidth <= 768;
-    },
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { CATEGORIES } from '@/config/categories'
+import { COMPETITION_FORMATS } from '@/config/competitionFormats'
+import { currentCompetition } from '@/config/currentCompetition'
+import type { Competitor } from '@/types'
 
-    async fetchUserPredictions() {
-      const API_URL = process.env.VUE_APP_API_URL;
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.error("Token manquant. Veuillez vous connecter.");
-        this.users = [];
-        return;
-      }
+// ── Props ─────────────────────────────────────────────────────────────────
+const props = defineProps<{
+  currentCompetitionDay: number | null
+  competitionName:       string
+  formattedStartingDay:  string
+  formattedEndingDay:    string
+  startingDay:           string
+  endingDay:             string
+  countDown:             number
+}>()
 
-      try {
-        const response = await fetch(
-          `${API_URL}/api/predictions?competitionId=${this.competitionId}`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(
-            `Erreur lors de la récupération des prédictions : ${response.statusText}`
-          );
-        }
-
-        const data = await response.json();
-
-        this.users = data
-          .map((prediction) => {
-            if (!prediction || !prediction.username) {
-              console.error(
-                "Prédiction invalide ou utilisateur manquant :",
-                prediction
-              );
-              return null;
-            }
-
-            const competitionDay =
-              this.competitionDays[prediction.competitionDay - 1];
-            if (!competitionDay) {
-              console.error(
-                `Aucun événement trouvé pour competitionDay ${prediction.competitionDay}`
-              );
-              return null;
-            }
-
-            return {
-              username: prediction.username,
-              predictions: competitionDay.events.map((event, index) => ({
-                event,
-                firstPlace:
-                  prediction.predictions[
-                    index === 0 ? "womenFirstPlace" : "menFirstPlace"
-                  ] || "",
-                secondPlace:
-                  prediction.predictions[
-                    index === 0 ? "womenSecondPlace" : "menSecondPlace"
-                  ] || "",
-                thirdPlace1:
-                  prediction.predictions[
-                    index === 0 ? "womenThirdPlace1" : "menThirdPlace1"
-                  ] || "",
-                thirdPlace2:
-                  prediction.predictions[
-                    index === 0 ? "womenThirdPlace2" : "menThirdPlace2"
-                  ] || "",
-              })),
-            };
-          })
-          .filter(Boolean);
-      } catch (error) {
-        console.error(
-          "Erreur lors de la récupération des prédictions :",
-          error
-        );
-        this.users = [];
-      }
-    },
-    async fetchResults() {
-      const results = {};
-
-      const weightIds = Object.values(this.competitionDays)
-        .flatMap((day) => day.events.map((event) => this.getWeightId(event)))
-        .filter(Boolean);
-
-      const fetchPromises = weightIds.map(async (weightId) => {
-        try {
-          const response = await fetch(
-            `https://data.ijf.org/api/get_json?access_token=&params%5Baction%5D=competition.competitors&params%5Bid_competition%5D=${this.competitionId}&params%5Bid_weight%5D=${weightId}`
-          );
-
-          if (!response.ok) {
-            console.error(
-              `Erreur HTTP pour weightId ${weightId}: ${response.status}`
-            );
-            return;
-          }
-
-          const data = await response.json();
-
-          const categoryData =
-            data.categories?.[Object.keys(data.categories)[0]]?.[weightId];
-          const competitors = Object.values(categoryData?.persons || {});
-
-          const filteredCompetitors = competitors.filter(
-            (competitor) => competitor.place !== null
-          );
-
-          if (filteredCompetitors.length > 0) {
-            results[weightId] = filteredCompetitors;
-          }
-        } catch (error) {
-          console.error(
-            `Erreur lors de la récupération des résultats pour weightId ${weightId}:`,
-            error
-          );
-        }
-      });
-
-      try {
-        await Promise.all(fetchPromises);
-      } catch (error) {
-        console.error("Erreur lors de l'exécution des appels API :", error);
-      }
-
-      for (const day of this.competitionDays) {
-        for (const event of day.events) {
-          const weightId = this.getWeightId(event);
-          if (weightId && results[weightId]) {
-            this.results[event] = results[weightId];
-          }
-        }
-      }
-    },
-    getWeightId(event) {
-      const weightMapping = {
-        "Men -60kg": 1,
-        "Men -66kg": 2,
-        "Men -73kg": 3,
-        "Men -81kg": 4,
-        "Men -90kg": 5,
-        "Men -100kg": 6,
-        "Men +100kg": 7,
-        "Women -48kg": 8,
-        "Women -52kg": 9,
-        "Women -57kg": 10,
-        "Women -63kg": 11,
-        "Women -70kg": 12,
-        "Women -78kg": 13,
-        "Women +78kg": 14,
-      };
-
-      return weightMapping[event] || null;
-    },
-    calculateUserScores() {
-      if (!Array.isArray(this.users) || this.users.length === 0) {
-        console.warn("Aucun utilisateur trouvé pour calculer les scores.");
-        this.leaderboard = [];
-        return;
-      }
-
-      const userScoresMap = new Map();
-
-      for (const user of this.users) {
-        if (!user || !user.username || !Array.isArray(user.predictions)) {
-          console.error("Utilisateur ou prédictions invalides :", user);
-          continue;
-        }
-
-        let score = 0;
-
-        for (const prediction of user.predictions) {
-          const eventResults = this.results[prediction.event];
-          if (!eventResults) continue;
-
-          const actualResults = {
-            firstPlace: eventResults.find(
-              (competitor) => competitor.place === "1"
-            )
-              ? this.normalizeName(
-                  `${
-                    eventResults.find((competitor) => competitor.place === "1")
-                      .family_name
-                  } ${
-                    eventResults.find((competitor) => competitor.place === "1")
-                      .given_name
-                  }`
-                )
-              : null,
-            secondPlace: eventResults.find(
-              (competitor) => competitor.place === "2"
-            )
-              ? this.normalizeName(
-                  `${
-                    eventResults.find((competitor) => competitor.place === "2")
-                      .family_name
-                  } ${
-                    eventResults.find((competitor) => competitor.place === "2")
-                      .given_name
-                  }`
-                )
-              : null,
-            thirdPlace: eventResults
-              .filter((competitor) => competitor.place === "3")
-              .map((competitor) =>
-                this.normalizeName(
-                  `${competitor.family_name} ${competitor.given_name}`
-                )
-              ),
-          };
-
-          if (
-            !actualResults.firstPlace &&
-            !actualResults.secondPlace &&
-            actualResults.thirdPlace.length === 0
-          ) {
-            continue;
-          }
-
-          const userPredictions = {
-            firstPlace: this.normalizeName(prediction.firstPlace),
-            secondPlace: this.normalizeName(prediction.secondPlace),
-            thirdPlace: [
-              this.normalizeName(prediction.thirdPlace1),
-              this.normalizeName(prediction.thirdPlace2),
-            ],
-          };
-          if (userPredictions.firstPlace === actualResults.firstPlace) {
-            score += 3;
-          } else if (
-            userPredictions.firstPlace === actualResults.secondPlace ||
-            actualResults.thirdPlace.includes(userPredictions.firstPlace)
-          ) {
-            score += 1;
-          }
-
-          if (userPredictions.secondPlace === actualResults.secondPlace) {
-            score += 3;
-          } else if (
-            userPredictions.secondPlace === actualResults.firstPlace ||
-            actualResults.thirdPlace.includes(userPredictions.secondPlace)
-          ) {
-            score += 1;
-          }
-
-          userPredictions.thirdPlace.forEach((predictedThirdPlace) => {
-            if (actualResults.thirdPlace.includes(predictedThirdPlace)) {
-              score += 3;
-            } else if (
-              predictedThirdPlace === actualResults.firstPlace ||
-              predictedThirdPlace === actualResults.secondPlace
-            ) {
-              score += 1;
-            }
-          });
-        }
-
-        userScoresMap.set(
-          user.username,
-          (userScoresMap.get(user.username) || 0) + score
-        );
-      }
-
-      this.leaderboard = Array.from(userScoresMap.entries())
-        .map(([username, points]) => ({ username, points }))
-        .sort((a, b) => b.points - a.points);
-    },
-    normalizeName(name) {
-      if (!name) return "";
-      return name
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/\s*\(.*?\)\s*/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-    },
-    async archiveLeaderboard() {
-      const today = new Date();
-      const competitionEndDate = new Date(this.endingDay);
-      if (today > competitionEndDate) {
-        try {
-          const API_URL = process.env.VUE_APP_API_URL;
-          const token = localStorage.getItem("token");
-          if (!token) {
-            console.error("Token manquant. Veuillez vous connecter.");
-            return;
-          }
-
-          const response = await fetch(`${API_URL}/api/archived-competitions`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              competitionId: this.competitionId,
-              competitionName: this.competitionName,
-              leaderboard: this.leaderboard,
-              startingDay: this.formatDateToDDMMYYYY(this.startingDay),
-              endingDay: this.formatDateToDDMMYYYY(this.endingDay),
-            }),
-          });
-
-          if (!response.ok) {
-            throw new Error(
-              `Erreur lors de l'archivage : ${response.statusText}`
-            );
-          }
-        } catch (error) {
-          console.error("Erreur lors de l'archivage du leaderboard :", error);
-        }
-      }
-    },
-    formatDateToDDMMYYYY(date) {
-    const parsedDate = new Date(date);
-    const day = String(parsedDate.getDate()).padStart(2, "0");
-    const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
-    const year = parsedDate.getFullYear();
-    return `${day}/${month}/${year}`;
-  },
-  },
-};
-</script>
-
-<style>
-.btn {
-  border: 2px solid slategray;
+// ── Types ─────────────────────────────────────────────────────────────────
+interface UserPrediction {
+  event:       string
+  firstPlace:  string
+  secondPlace: string
+  thirdPlace1: string
+  thirdPlace2: string
 }
-.prediction- flex align-center {
-  border: 2px solid slategray;
+
+interface User {
+  username:    string
+  predictions: UserPrediction[]
 }
-.day-title {
-  border: 2px solid slategray;
+
+interface LeaderboardEntry {
+  username: string
+  points:   number
 }
-.prediction-input {
-  border: 2px solid slategrey;
+
+// ── State ─────────────────────────────────────────────────────────────────
+const isMobile   = ref(window.innerWidth <= 768)
+const results    = ref<Record<string, Competitor[]>>({})
+const leaderboard = ref<LeaderboardEntry[]>([])
+const users      = ref<User[]>([])
+
+// ── Computed ──────────────────────────────────────────────────────────────
+const competitionFormat = computed(() => COMPETITION_FORMATS[currentCompetition.type])
+
+const currentDayFormat = computed(() =>
+  props.currentCompetitionDay
+    ? competitionFormat.value.find(d => d.day === props.currentCompetitionDay) ?? null
+    : null
+)
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+const checkMobile = () => { isMobile.value = window.innerWidth <= 768 }
+
+const normalizeName = (name: string | undefined): string => {
+  if (!name) return ''
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s*\(.*?\)\s*/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
-input {
-  @media screen and (max-width: 768px) {
-    max-width: 300px;
+
+const formatDateToDDMMYYYY = (date: string): string => {
+  const d = new Date(date)
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`
+}
+
+// ── API ───────────────────────────────────────────────────────────────────
+const fetchUserPredictions = async (): Promise<void> => {
+  const token = localStorage.getItem('token')
+  if (!token) { users.value = []; return }
+
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/predictions?competitionId=${currentCompetition.id}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+    if (!response.ok) throw new Error(response.statusText)
+
+    const data: Array<{
+      username: string
+      competitionDay: number
+      predictions: Record<string, string>
+    }> = await response.json()
+
+    users.value = data.flatMap(prediction => {
+      const dayFormat = competitionFormat.value.find(d => d.day === prediction.competitionDay)
+      if (!dayFormat) return []
+
+      return [{
+        username: prediction.username,
+        predictions: dayFormat.weightIds.map(weightId => {
+          const gender = CATEGORIES[weightId].gender
+          const prefix = gender === 'women' ? 'women' : 'men'
+          return {
+            event:       CATEGORIES[weightId].label,
+            firstPlace:  prediction.predictions[`${prefix}FirstPlace`]  ?? '',
+            secondPlace: prediction.predictions[`${prefix}SecondPlace`] ?? '',
+            thirdPlace1: prediction.predictions[`${prefix}ThirdPlace1`] ?? '',
+            thirdPlace2: prediction.predictions[`${prefix}ThirdPlace2`] ?? '',
+          }
+        }),
+      }]
+    })
+  } catch (err) {
+    console.error('Erreur fetchUserPredictions:', err)
+    users.value = []
   }
 }
-.custom-blue {
+
+const fetchResults = async (): Promise<void> => {
+  const allWeightIds = competitionFormat.value.flatMap(day => day.weightIds)
+
+  await Promise.all(allWeightIds.map(async weightId => {
+    try {
+      const response = await fetch(
+        `https://data.ijf.org/api/get_json?access_token=&params%5Baction%5D=competition.competitors&params%5Bid_competition%5D=${currentCompetition.id}&params%5Bid_weight%5D=${weightId}`
+      )
+      if (!response.ok) return
+
+      const data = await response.json()
+      const genderKey = CATEGORIES[weightId].gender === 'men' ? 1 : 2
+      const categoryData = data.categories?.[genderKey]?.[weightId]
+      const placed = (Object.values(categoryData?.persons ?? {}) as Competitor[])
+        .filter(c => c.place != null)
+
+      if (placed.length > 0) {
+        results.value[CATEGORIES[weightId].label] = placed
+      }
+    } catch (err) {
+      console.error(`Erreur fetchResults weightId ${weightId}:`, err)
+    }
+  }))
+}
+
+// ── Scoring ───────────────────────────────────────────────────────────────
+const calculateUserScores = (): void => {
+  if (!users.value.length) { leaderboard.value = []; return }
+
+  const scoreMap = new Map<string, number>()
+
+  for (const user of users.value) {
+    let score = 0
+
+    for (const prediction of user.predictions) {
+      const eventResults = results.value[prediction.event]
+      if (!eventResults) continue
+
+      const getName = (c: Competitor) => normalizeName(`${c.family_name} ${c.given_name}`)
+
+      const actual = {
+        first:  getName(eventResults.find(c => c.place === '1') ?? {} as Competitor) || null,
+        second: getName(eventResults.find(c => c.place === '2') ?? {} as Competitor) || null,
+        thirds: eventResults.filter(c => c.place === '3').map(getName),
+      }
+
+      if (!actual.first && !actual.second && !actual.thirds.length) continue
+
+      const predicted = {
+        first:  normalizeName(prediction.firstPlace),
+        second: normalizeName(prediction.secondPlace),
+        thirds: [normalizeName(prediction.thirdPlace1), normalizeName(prediction.thirdPlace2)],
+      }
+
+      // 1ère place
+      if      (predicted.first === actual.first)                                        score += 3
+      else if (predicted.first === actual.second || actual.thirds.includes(predicted.first)) score += 1
+
+      // 2ème place
+      if      (predicted.second === actual.second)                                       score += 3
+      else if (predicted.second === actual.first || actual.thirds.includes(predicted.second)) score += 1
+
+      // 3ème places
+      predicted.thirds.forEach(p => {
+        if      (actual.thirds.includes(p))              score += 3
+        else if (p === actual.first || p === actual.second) score += 1
+      })
+    }
+
+    scoreMap.set(user.username, (scoreMap.get(user.username) ?? 0) + score)
+  }
+
+  leaderboard.value = Array.from(scoreMap.entries())
+    .map(([username, points]) => ({ username, points }))
+    .sort((a, b) => b.points - a.points)
+}
+
+const archiveLeaderboard = async (): Promise<void> => {
+  if (!props.endingDay)                              return
+  if (!leaderboard.value.length)                     return
+  if (!leaderboard.value.some(u => u.points > 0))   return
+  if (new Date() <= new Date(props.endingDay))       return
+
+  const token = localStorage.getItem('token')
+  if (!token) return
+
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/archived-competitions`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          competitionId:   currentCompetition.id,
+          competitionName: props.competitionName,
+          leaderboard:     leaderboard.value,
+          startingDay:     formatDateToDDMMYYYY(props.startingDay),
+          endingDay:       formatDateToDDMMYYYY(props.endingDay),
+        }),
+      }
+    )
+    if (!response.ok) throw new Error(response.statusText)
+  } catch (err) {
+    console.error('Erreur archiveLeaderboard:', err)
+  }
+}
+
+// ── Lifecycle ─────────────────────────────────────────────────────────────
+onMounted(async () => {
+  window.addEventListener('resize', checkMobile)
+  await fetchUserPredictions()
+  await fetchResults()
+  calculateUserScores()
+  await archiveLeaderboard()
+})
+
+onUnmounted(() => window.removeEventListener('resize', checkMobile))
+</script>
+
+<style scoped>
+/* ── PAGE ── */
+.ranking-page {
+  min-height: 100vh;
+  background: linear-gradient(160deg, #f8faff 0%, #eef3fd 100%);
+  width: 100%;
+}
+
+/* ── HERO ── */
+.ranking-hero {
+  padding: 4rem 2rem 2.5rem;
+  text-align: center;
+}
+.hero-inner {
+  max-width: 700px;
+  margin: 0 auto;
+  animation: fadeInUp 0.6s ease both;
+}
+.hero-tag {
+  display: inline-block;
+  background: rgba(45, 80, 142, 0.08);
   color: #2d508e;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  margin-bottom: 1.25rem;
+}
+.hero-title {
+  font-size: clamp(1.6rem, 4vw, 2.8rem);
+  font-weight: 700;
+  color: #1e3461;
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+}
+
+/* Countdown */
+.countdown-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  background: #2d508e;
+  color: white;
+  border-radius: 14px;
+  padding: 0.75rem 2.5rem;
+  margin-bottom: 1.5rem;
+}
+.countdown-label {
+  font-size: 0.7rem;
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.countdown-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+}
+
+/* Day info pill */
+.day-info-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.9rem;
+}
+.day-badge {
+  background: rgba(45, 80, 142, 0.08);
+  color: #2d508e;
+  font-weight: 600;
+  font-size: 0.72rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.day-badge.active {
+  background: #dcfce7;
+  color: #166534;
+}
+.day-text {
+  color: #4a5568;
+  font-weight: 500;
+}
+
+/* ── SECTION ── */
+.ranking-section {
+  padding: 0.5rem 2rem 5rem;
+}
+.section-inner {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* ── EMPTY STATE ── */
+.empty-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 3.5rem 2rem;
+  text-align: center;
+  animation: fadeInUp 0.5s ease both;
+}
+.empty-icon  { font-size: 2.5rem; margin-bottom: 1rem; }
+.empty-title { font-size: 1.1rem; font-weight: 600; color: #1e3461; margin-bottom: 0.5rem; }
+.empty-sub   { color: #718096; font-size: 0.9rem; }
+
+/* ── PODIUM ── */
+.podium-row {
+  display: flex;
+  align-items: flex-end; /* ← les cartes s'alignent par le bas */
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.podium-card {
+  flex: 1;
+  max-width: 210px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.5rem 1rem 1.25rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: fadeInUp 0.5s ease calc(var(--i, 0) * 0.12s) both;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.podium-card.gold {
+  min-height: 220px; /* ← 100% */
+  border-color: #fbbf24;
+  background: linear-gradient(160deg, #fffdf0 0%, #fffbe8 100%);
+}
+.podium-card.silver {
+  min-height: 187px; /* ← 85% */
+  border-color: #cbd5e0;
+}
+.podium-card.bronze {
+  min-height: 154px; /* ← 70% */
+  border-color: #d6a679;
+}
+.podium-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(45, 80, 142, 0.12);
+}
+
+
+/* ── RANKINGS LIST ── */
+.rankings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.ranking-row {
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.9rem 1.25rem;
+  animation: fadeInUp 0.4s ease calc(var(--i, 0) * 0.05s) both;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.ranking-row:hover {
+  transform: translateX(5px);
+  box-shadow: 0 2px 12px rgba(45, 80, 142, 0.08);
+}
+.rank-number   { width: 2.5rem; font-size: 0.85rem; font-weight: 700; color: #a0aec0; flex-shrink: 0; }
+.rank-username { flex: 1; font-weight: 600; color: #1e3461; font-size: 0.95rem; }
+.rank-points   { font-weight: 700; color: #2d508e; font-size: 0.95rem; }
+
+/* ── ANIMATION ── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 </style>

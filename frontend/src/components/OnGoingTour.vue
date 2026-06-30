@@ -1,764 +1,785 @@
 <template>
-  <div class="w-full flex-col text-center">
-    <h1
-      class="lg:text-5xl text-3xl underline custom-blue font-bold lg:pt-16 lg:pb-12 py-8"
-    >
-      {{ competitionName }}
-    </h1>
-    <h1 v-if="countDown > 0"
-      class="lg:text-5xl text-3xl underline custom-blue font-bold lg:pb-8 pb-8"
-    >
-      J-{{ countDown }}
-    </h1>
-    <div>
-      <div
-        class="lg:text-3xl text-2xl underline custom-blue font-bold lg:pt-4 lg:pb-8 pb-8 pt-2"
-      >
-        <template
-          v-if="
-            currentCompetitionDay && competitionDays[currentCompetitionDay - 1]
-          "
+  <div class="tour-page">
+    <!-- Hero -->
+    <section class="hero">
+      <h1 class="hero-title fade-up" style="--delay: 0ms">
+        {{ competitionName }}
+      </h1>
+      <div class="hero-badges fade-up" style="--delay: 120ms">
+        <span v-if="countDown > 0" class="badge badge-countdown"
+          >⏳ J-{{ countDown }}</span
         >
-          En cours - Jour {{ currentCompetitionDay }} :
-          {{ competitionDays[currentCompetitionDay - 1].events[0] }} &
-          {{ competitionDays[currentCompetitionDay - 1].events[1] }}
-        </template>
-        <template v-else>
-          Début le {{ formattedStartingDay }} et fin le
-          {{ formattedEndingDay }}</template
+        <span
+          v-if="currentCompetitionDay && currentDayFormat"
+          class="badge badge-live"
         >
+          🟢 En cours — Jour {{ currentCompetitionDay }} :
+          {{
+            currentDayFormat.weightIds
+              .map((id) => CATEGORIES[id].label)
+              .join(" & ")
+          }}
+        </span>
+        <span v-else class="badge badge-info">
+          📅 {{ formattedStartingDay }} → {{ formattedEndingDay }}
+        </span>
       </div>
-    </div>
+    </section>
 
-    <div class="text-2xl text-center lg:w-1/2 lg:px-0 px-6 m-auto lg:pb-6 pb-0 lg:mt-8 mt-6">
-      <div class="button-container mb-4">
+    <!-- Sélecteur de jours -->
+    <section class="days-section fade-up" style="--delay: 220ms">
+      <div class="days-tabs">
         <button
-          v-for="day in days"
-          :key="day"
-          :class="[
-            'btn p-2 mr-1 mb-1',
-            selectedDay === day ? 'bg-blue-500' : '',
-          ]"
-          @click="selectDay(day)"
+          v-for="d in competitionFormat"
+          :key="d.day"
+          class="day-tab"
+          :class="{ active: selectedDay === d.day }"
+          @click="selectDay(d.day)"
         >
-          Jour {{ day }}
+          <span>Jour {{ d.day }}</span>
+          <span class="day-tab-sub">
+            {{
+              d.weightIds
+                .map((id) => CATEGORIES[id].label.split(" ")[1])
+                .join(" / ")
+            }}
+          </span>
         </button>
       </div>
-      <div v-if="selectedDay" class="container lg:mt-6 mt-2">
-        <div class="day-title mb-1 mt-8">
-          <i class="fas fa-female"></i> {{ womenEvent }} &
-          <i class="fas fa-male"></i> {{ menEvent }}
+    </section>
+
+    <!-- Contenu -->
+    <section v-if="selectedDay !== null" class="content-section">
+      <!-- Skeleton -->
+      <div v-if="loading" class="skeleton-wrap">
+        <div v-for="i in 2" :key="i" class="skeleton-card">
+          <div class="skeleton-line" style="width: 35%"></div>
+          <div class="skeleton-line" style="width: 100%"></div>
+          <div class="skeleton-line" style="width: 100%"></div>
+          <div class="skeleton-line" style="width: 100%"></div>
+        </div>
+      </div>
+
+      <!-- Erreur -->
+      <div v-else-if="error" class="alert alert-error">
+        <span>{{ error }}</span>
+        <button class="retry-btn" @click="loadCompetitorsData(selectedDay!)">
+          Réessayer
+        </button>
+      </div>
+
+      <!-- Pronostics -->
+      <div v-else>
+        <div class="info-banner">
+          🕒 Pronostics ouverts la veille à partir de 8h et jusqu'au début de la
+          journée.
         </div>
 
-        <div v-if="loading" class="my-4 p-4 text-center">
-          <p>Chargement des données en cours...</p>
-        </div>
-
-        <div v-else-if="error" class="my-4 p-4 text-center text-red-500">
-          <p>{{ error }}</p>
-          <button
-            class="btn my-2 px-4 py-1"
-            @click="loadCompetitorsData(selectedDay)"
-          >
-            Réessayer
-          </button>
-        </div>
-
-        <div v-else class="prediction-container my-4">
-          <div class="text-sm text-gray-600 mt-2">
-            {{ predictions[selectedDay].women[0].options.length }} judokas
-            femmes et
-            {{ predictions[selectedDay].men[0].options.length }} judokas hommes
-            disponibles
-          </div>
-          <div class="text-xl mt-4 underline lg:mx-0 mx-4">
-            🕒 Pronostics possibles dès la veille et jusqu’au début de la journée de competition.
-          </div>
-          <div
-            :class="`women-prediction text-2xl mt-5 mb-2 flex align-left bold underline ${
-              isMobile ? 'justify-center text-2xl' : 'ml-10'
-            }`"
-          >
-            Pronostics Femmes:
-          </div>
-          <div class="pb-2 flex flex-col mt-4 lg:ml-4 ml-0">
-            <div
-              v-for="(select, index) in predictions[selectedDay].women"
-              :key="index"
-              :class="isMobile ? 'flex flex-col m-auto' : 'flex flex-row my-2'"
+        <div
+          v-for="category in selectedDayCategories"
+          :key="category.weightId"
+          class="category-card"
+          :class="{ 'card-inactive': !isActive(category.weightId) }"
+        >
+          <div class="card-header">
+            <span class="card-title">
+              {{ category.gender === "women" ? "👩" : "👨" }}
+              {{ category.label }}
+            </span>
+            <span
+              class="status-badge"
+              :class="
+                isActive(category.weightId) ? 'status-open' : 'status-closed'
+              "
             >
-              <div
-                :class="
-                  isMobile
-                    ? 'flex flex-col m-auto'
-                    : 'flex flex-row items-center my-2 w-full ml-10'
-                "
+              {{ isActive(category.weightId) ? "Ouvert" : "Fermé" }}
+            </span>
+          </div>
+
+          <div class="places-grid">
+            <div
+              v-for="(label, placeIndex) in PLACE_LABELS"
+              :key="placeIndex"
+              class="place-row"
+            >
+              <label class="place-label">{{ label }}</label>
+              <select
+                class="place-select"
+                :class="{ 'select-disabled': !isActive(category.weightId) }"
+                v-model="predictions[category.weightId].places[placeIndex]"
+                :disabled="!isActive(category.weightId)"
               >
-                <label
-                  :for="'womenPlace' + index"
-                  class="mx-4 text-xl underline"
+                <option value="" disabled>Choisissez un(e) judoka</option>
+                <option
+                  v-for="option in getAvailableOptions(
+                    category.weightId,
+                    placeIndex,
+                  )"
+                  :key="option"
+                  :value="option"
                 >
-                  {{ select.label }}
-                </label>
-                <select
-                  :id="'womenPlace' + index"
-                  class="prediction-select text-black px-2 lg:w-1/2"
-                  :class="{
-                    'ml-3': !isMobile && index === 0,
-                    'mt-2 mb-6 ml-0': isMobile,
-                    'text-gray-400':
-                      !isCategoryActive(categoryMapping[selectedDay].women)
-                  }"
-                  v-model="select.value"
-                  required
-                  :disabled="
-                    !isCategoryActive(categoryMapping[selectedDay].women)
-                  "
-                >
-                  <option value="" disabled>Choisissez une judoka</option>
-                  <option
-                    v-for="(option, optIndex) in getWomenAvailableOptions(
-                      index
-                    )"
-                    :key="optIndex"
-                    :value="option"
-                  >
-                    {{ option }}
-                  </option>
-                </select>
-              </div>
+                  {{ option }}
+                </option>
+              </select>
             </div>
           </div>
-          <div
-            :class="`men-prediction text-2xl mt-5 mb-2 flex align-left bold underline ${
-              isMobile ? 'justify-center text-2xl' : 'ml-10'
-            }`"
-          >
-            Pronostics Hommes:
-          </div>
-          <div class="pb-2 flex flex-col mt-4 lg:ml-4 ml-0">
-            <div
-              v-for="(select, index) in predictions[selectedDay].men"
-              :key="index"
-              :class="isMobile ? 'flex flex-col m-auto' : 'flex flex-row my-2'"
-            >
-              <div
-                :class="
-                  isMobile
-                    ? 'flex flex-col m-auto'
-                    : 'flex flex-row items-center my-2 w-full ml-10'
-                "
-              >
-                <label :for="'menPlace' + index" class="mx-4 text-xl underline">
-                  {{ select.label }}
-                </label>
-                <select
-                  :id="'menPlace' + index"
-                  class="prediction-select text-black px-2 lg:w-1/2"
-                  :class="{
-                    'ml-3': !isMobile && index === 0,
-                    'mt-2 mb-6 ml-0': isMobile,
-                    'text-gray-400':
-                      !isCategoryActive(categoryMapping[selectedDay].men)
-                  }"
-                  v-model="select.value"
-                  required
-                  :disabled="
-                    !isCategoryActive(categoryMapping[selectedDay].men)
-                  "
-                >
-                  <option value="" disabled>Choisissez un judoka</option>
-                  <option
-                    v-for="(option, optIndex) in getMenAvailableOptions(index)"
-                    :key="optIndex"
-                    :value="option"
-                  >
-                    {{ option }}
-                  </option>
-                </select>
-              </div>
-            </div>
-          </div>
+        </div>
+
+        <div class="validate-section">
           <button
-            :class="[
-              'btn my-4 px-4 py-1',
-              isValidForm && hasActiveCategories
-                ? 'bg-blue-500'
-                : 'bg-gray-400',
-            ]"
+            class="btn-validate"
+            :class="{
+              'btn-validate-disabled': !isValidForm || !hasActiveCategories,
+            }"
             :disabled="!isValidForm || !hasActiveCategories"
             @click="validatePrediction"
           >
-            Je valide!
+            ✓ Je valide mes pronostics
           </button>
           <div
             v-if="predictionMessage"
+            class="message-box"
             :class="{
-              'text-green-500': predictionSubmitted,
-              'text-red-500': !predictionSubmitted && !isValidForm,
-              'text-blue-500': !predictionSubmitted && isValidForm,
+              'message-success': predictionSubmitted,
+              'message-error': !predictionSubmitted && !isValidForm,
+              'message-info': !predictionSubmitted && isValidForm,
             }"
-            class="my-4 lg:mx-0 mx-4"
           >
             {{ predictionMessage }}
           </div>
         </div>
       </div>
+    </section>
+
+    <div v-else class="no-day-hint">
+      👆 Sélectionnez un jour pour accéder aux pronostics.
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  name: "OnGoingTour",
-  props: {
-    competitionDays: {
-      type: Object,
-      required: true,
-    },
-    currentCompetitionDay: {
-      type: Number,
-      required: true,
-    },
-    competitionId: {
-      type: Number,
-      required: true,
-    },
-    currentFormattedDate: {
-      type: Number,
-      required: true,
-    },
-    competitionName: {
-      type: String,
-      required: true,
-    },
-    formattedStartingDay: {
-      type: String,
-      required: true,
-    },
-    formattedEndingDay: {
-      type: String,
-      required: true,
-    },
-    countDown: {
-      type: Number,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      isMobile: false,
-      menEvent: null,
-      womenEvent: null,
-      days: [1, 2, 3, 4, 5, 6, 7],
-      selectedDay: null,
-      predictions: {
-        1: {
-          women: [
-            { label: "1ère place:", value: "", options: [] },
-            { label: "2ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-          ],
-          men: [
-            { label: "1ère place:", value: "", options: [] },
-            { label: "2ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-          ],
-        },
-        2: {
-          women: [
-            { label: "1ère place:", value: "", options: [] },
-            { label: "2ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-          ],
-          men: [
-            { label: "1ère place:", value: "", options: [] },
-            { label: "2ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-          ],
-        },
-        3: {
-          women: [
-            { label: "1ère place:", value: "", options: [] },
-            { label: "2ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-          ],
-          men: [
-            { label: "1ère place:", value: "", options: [] },
-            { label: "2ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-          ],
-        },
-        4: {
-          women: [
-            { label: "1ère place:", value: "", options: [] },
-            { label: "2ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-          ],
-          men: [
-            { label: "1ère place:", value: "", options: [] },
-            { label: "2ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-          ],
-        },
-        5: {
-          women: [
-            { label: "1ère place:", value: "", options: [] },
-            { label: "2ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-          ],
-          men: [
-            { label: "1ère place:", value: "", options: [] },
-            { label: "2ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-          ],
-        },
-        6: {
-          women: [
-            { label: "1ère place:", value: "", options: [] },
-            { label: "2ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-          ],
-          men: [
-            { label: "1ère place:", value: "", options: [] },
-            { label: "2ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-          ],
-        },
-        7: {
-          women: [
-            { label: "1ère place:", value: "", options: [] },
-            { label: "2ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-          ],
-          men: [
-            { label: "1ère place:", value: "", options: [] },
-            { label: "2ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-            { label: "3ème place:", value: "", options: [] },
-          ],
-        },
-      },
-      apiBaseUrl: "https://data.ijf.org/api/get_json",
-      API_URL: process.env.VUE_APP_API_URL,
-      loading: false,
-      categoryMapping: {
-        1: { men: 1, women: 8 },
-        2: { men: 2, women: 9 },
-        3: { men: 3, women: 10 },
-        4: { men: 4, women: 11 },
-        5: { men: 5, women: 12 },
-        6: { men: 6, women: 13 },
-        7: { men: 7, women: 14 },
-      },
-      predictionSubmitted: false,
-    };
-  },
-  mounted() {
-    this.checkMobile();
-    window.addEventListener("resize", this.checkMobile);
-    const API_URL = process.env.VUE_APP_API_URL;
-  },
-  beforeDestroy() {
-    window.removeEventListener("resize", this.checkMobile);
-  },
-  methods: {
-    getCurrentDate() {
-      return new Date();
-    },
-    checkMobile() {
-      this.isMobile = window.innerWidth <= 768;
-    },
-    async selectDay(day) {
-      this.selectedDay = day;
-      this.womenEvent = this.competitionDays[day - 1].events[0];
-      this.menEvent = this.competitionDays[day - 1].events[1];
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { CATEGORIES } from "@/config/categories";
+import { COMPETITION_FORMATS } from "@/config/competitionFormats";
+import { currentCompetition } from "@/config/currentCompetition";
+import type { PredictionResult, Competitor } from "@/types";
 
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.error("Token manquant. Veuillez vous connecter.");
-        return;
-      }
+const props = defineProps<{
+  currentCompetitionDay: number | null;
+  competitionName: string;
+  formattedStartingDay: string;
+  formattedEndingDay: string;
+  startingDay: string | null;
+  countDown: number;
+}>();
 
-      if (!this.competitionId) {
-        console.error(
-          "competitionId manquant. Impossible de vérifier les prédictions."
-        );
-        return;
-      }
+interface WeightPrediction {
+  places: string[];
+  options: string[];
+}
 
-      try {
-        const method = this.predictionSubmitted ? "PUT" : "POST";
-        const response = await fetch(`${this.API_URL}/api/predictions`, {
-          method: method,
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            predictions: this.predictionObject,
-            competitionDay: this.selectedDay,
-            competitionId: this.competitionId,
-            date: new Date().toISOString().split("T")[0],
-          }),
-        });
+const API_URL = import.meta.env.VITE_API_URL;
+const PLACE_LABELS = [
+  "1ère place:",
+  "2ème place:",
+  "3ème place:",
+  "3ème place:",
+];
+const CLOSING_OFFSET_MINUTES = 30;
 
-        if (response.ok) {
-          const result = await response.json();
-          console.log(result.message);
-          this.predictionObject = result.prediction;
-          this.predictionSubmitted = true;
-        } else {
-          this.predictionObject = null;
-          this.predictionSubmitted = false;
-        }
-      } catch (error) {
-        console.error("Erreur réseau:", error);
-      }
+const isMobile = ref(window.innerWidth <= 768);
+const selectedDay = ref<number | null>(null);
+const loading = ref(false);
+const error = ref<string | null>(null);
+const predictionSubmitted = ref(false);
+const predictionObject = ref<PredictionResult | null>(null);
+const predictions = ref<Record<number, WeightPrediction>>({});
 
-      this.loadCompetitorsData(day);
-    },
-    async loadCompetitorsData(day) {
-      if (!day || !this.categoryMapping[day]) return;
+// ── Computed ──────────────────────────────────────────────────────────────
+const competitionFormat = computed(
+  () => COMPETITION_FORMATS[currentCompetition.type],
+);
 
-      this.loading = true;
-      this.error = null;
+const currentDayFormat = computed(() =>
+  props.currentCompetitionDay
+    ? competitionFormat.value.find(
+        (d) => d.day === props.currentCompetitionDay,
+      ) ?? null
+    : null,
+);
 
-      try {
-        const menCategoryId = this.categoryMapping[day].men;
-        const womenCategoryId = this.categoryMapping[day].women;
+const selectedDayCategories = computed(() => {
+  if (selectedDay.value === null) return [];
+  return (
+    competitionFormat.value
+      .find((d) => d.day === selectedDay.value)
+      ?.weightIds.map((id) => CATEGORIES[id]) ?? []
+  );
+});
 
-        try {
-          const [menData, womenData] = await Promise.all([
-            this.fetchCompetitors(menCategoryId),
-            this.fetchCompetitors(womenCategoryId),
-          ]);
+const hasActiveCategories = computed(() =>
+  selectedDayCategories.value.some(
+    (cat) => isActive(cat.weightId) && !isCategoryPredicted(cat.weightId),
+  ),
+);
 
-          this.processCompetitorsData(day, "men", menData);
-          this.processCompetitorsData(day, "women", womenData);
-        } catch (error) {
-          console.error(
-            `Erreur lors du chargement des données pour le jour ${day}:`,
-            error
-          );
-          this.error = `Impossible de charger les données: ${error.message}`;
-        } finally {
-          this.loading = false;
-        }
-      } catch (error) {
-        console.error("Erreur lors du chargement des données:", error);
-        this.error =
-          "Une erreur s'est produite lors du chargement des données.";
-      }
-      this.loading = false;
-    },
-    async fetchCompetitors(weightId) {
-      const url = `${this.apiBaseUrl}?access_token=&params%5Baction%5D=competition.competitors&params%5Bid_competition%5D=${this.competitionId}&params%5Bid_weight%5D=${weightId}`;
+const isValidForm = computed(() =>
+  selectedDayCategories.value.every((cat) => {
+    if (!isActive(cat.weightId) || isCategoryPredicted(cat.weightId))
+      return true;
+    return predictions.value[cat.weightId]?.places.every((p) => !!p) ?? false;
+  }),
+);
 
-      const response = await fetch(url);
+const predictionMessage = computed(() => {
+  if (selectedDay.value === null) return "";
+  const hasActive = selectedDayCategories.value.some((cat) =>
+    isActive(cat.weightId),
+  );
+  if (predictionSubmitted.value && hasActive)
+    return "Vous pouvez modifier votre pronostic tant que la catégorie est active.";
+  if (predictionSubmitted.value) return "Pronostic déjà effectué pour ce jour.";
+  if (!isValidForm.value)
+    return "Veuillez remplir tous les champs pour valider votre pronostic.";
+  if (!hasActiveCategories.value)
+    return "Les pronostics ne sont pas encore ouverts pour cette catégorie.";
+  return "Vous pouvez soumettre votre pronostic.";
+});
 
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP ! Statut : ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data;
-    },
-    processCompetitorsData(day, gender, data) {
-      const weightId = this.categoryMapping[day][gender];
-      const genderKey = gender === "men" ? 1 : 2;
-
-      const categoryData = data.categories?.[genderKey]?.[weightId];
-
-      if (!categoryData || !categoryData.persons) {
-        console.error(`Données invalides pour ${gender} jour ${day}`);
-        return;
-      }
-      const competitors = Object.values(categoryData.persons)
-        .sort(
-          (a, b) =>
-            (a.ranking_place || Infinity) - (b.ranking_place || Infinity)
-        )
-        .map((person) => {
-          const family = person.family_name || "";
-          const given = person.given_name || "";
-          const country = person.country_short || "";
-          return `${family.toUpperCase()} ${given} (${country})`;
-        });
-      this.predictions[day][gender].forEach((select) => {
-        select.options = competitors;
-      });
-    },
-    getMenAvailableOptions(index) {
-      const selectedValues = this.predictions[this.selectedDay].men
-        .map((select, i) => (i !== index ? select.value : null))
-        .filter((value) => value);
-
-      return this.predictions[this.selectedDay].men[index].options.filter(
-        (option) => !selectedValues.includes(option)
-      );
-    },
-
-    getWomenAvailableOptions(index) {
-      const selectedValues = this.predictions[this.selectedDay].women
-        .map((select, i) => (i !== index ? select.value : null))
-        .filter((value) => value);
-
-      return this.predictions[this.selectedDay].women[index].options.filter(
-        (option) => !selectedValues.includes(option)
-      );
-    },
-    async validatePrediction() {
-
-      const womenPredictions = this.predictions[this.selectedDay].women.reduce(
-        (acc, select, index) => {
-          const keys = [
-            "FirstPlace",
-            "SecondPlace",
-            "ThirdPlace1",
-            "ThirdPlace2",
-          ];
-          acc[`women${keys[index]}`] = select.value || "";
-          return acc;
-        },
-        {}
-      );
-
-      const menPredictions = this.predictions[this.selectedDay].men.reduce(
-        (acc, select, index) => {
-          const keys = [
-            "FirstPlace",
-            "SecondPlace",
-            "ThirdPlace1",
-            "ThirdPlace2",
-          ];
-          acc[`men${keys[index]}`] = select.value || "";
-          return acc;
-        },
-        {}
-      );
-
-      this.predictionObject = {
-        ...womenPredictions,
-        ...menPredictions,
-      };
-
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.error("Token manquant. Veuillez vous connecter.");
-        return;
-      }
-
-      try {
-        const method = this.predictionSubmitted ? "PUT" : "POST";
-        const response = await fetch(`${this.API_URL}/api/predictions`, {
-          method: method,
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            predictions: this.predictionObject,
-            competitionDay: this.selectedDay,
-            competitionId: this.competitionId,
-            date: new Date().toISOString().split("T")[0],
-          }),
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.warn("Erreur côté backend :", errorText);
-          return;
-        }
-
-        const result = await response.json();
-
-        this.predictionSubmitted = true;
-      } catch (error) {
-        console.error("Erreur réseau :", error);
-      }
-    },
-    isCategoryActive(categoryId) {
-      const now = this.getCurrentDate();
-
-      // World Championships Config
-      const categorySchedules = {
-        "1,8": "2025-06-13T10:30:00",
-        "2,9": "2025-06-14T10:30:00", 
-        "3,10": "2025-06-15T10:30:00",
-        "4,11": "2025-06-16T10:30:00",
-        "5,12": "2025-06-17T10:30:00",
-        "6,13": "2025-06-18T10:30:00",
-        "7,14": "2025-06-19T10:30:00",
-      };
-
-      // Grand Slam Config
-      /* 
-      "1,2,3,8,9,10,11": "2025-02-01T09:30:00",
-      "4,,5,6,7,12,13,14": "2025-02-02T09:30:00",
-      */
-
-      for (const [categories, endTime] of Object.entries(categorySchedules)) {
-      const categoryList = categories.split(",");
-      if (categoryList.includes(String(categoryId))) {
-        const endDate = new Date(endTime);
-        const startDate = new Date(endDate);
-        startDate.setDate(endDate.getDate() - 1);
-        startDate.setHours(8, 0, 0, 0);
-
-        if (now >= startDate && now < endDate) {
-          return true;
-        }
-      }
-    }
-    return false;
-    },
-    isCategoryPredicted(categoryId) {
-      if (!this.predictionObject || !this.predictionObject.predictions) {
-        return false;
-      }
-
-      const predictions = this.predictionObject.predictions;
-
-      if (categoryId === 4) {
-        return !!predictions.menFirstPlace;
-      }
-      if (categoryId === 5) {
-        return !!predictions.menSecondPlace;
-      }
-      if (categoryId === 6) {
-        return !!predictions.menThirdPlace1;
-      }
-      if (categoryId === 7) {
-        return !!predictions.menThirdPlace2;
-      }
-
-      if (categoryId === 12) {
-        return !!predictions.womenFirstPlace;
-      }
-      if (categoryId === 13) {
-        return !!predictions.womenSecondPlace;
-      }
-      if (categoryId === 14) {
-        return !!predictions.womenThirdPlace1;
-      }
-
-      return false;
-    },
-  },
-  computed: {
-    hasActiveCategories() {
-      const womenActive = this.predictions[this.selectedDay]?.women.some(
-        (select, index) =>
-          this.isCategoryActive(this.categoryMapping[this.selectedDay].women) &&
-          !this.isCategoryPredicted(
-            this.categoryMapping[this.selectedDay].women
-          )
-      );
-
-      const menActive = this.predictions[this.selectedDay]?.men.some(
-        (select, index) =>
-          this.isCategoryActive(this.categoryMapping[this.selectedDay].men) &&
-          !this.isCategoryPredicted(this.categoryMapping[this.selectedDay].men)
-      );
-
-      return womenActive || menActive;
-    },
-    isValidForm() {
-      const womenValid = this.predictions[this.selectedDay]?.women.every(
-        (select, index) =>
-          !this.isCategoryActive(
-            this.categoryMapping[this.selectedDay].women
-          ) ||
-          this.isCategoryPredicted(
-            this.categoryMapping[this.selectedDay].women
-          ) ||
-          select.value
-      );
-
-      const menValid = this.predictions[this.selectedDay]?.men.every(
-        (select, index) =>
-          !this.isCategoryActive(this.categoryMapping[this.selectedDay].men) ||
-          this.isCategoryPredicted(
-            this.categoryMapping[this.selectedDay].men
-          ) ||
-          select.value
-      );
-
-      return womenValid && menValid;
-    },
-    predictionMessage() {
-      if (
-        this.predictionSubmitted &&
-        this.isCategoryActive(this.categoryMapping[this.selectedDay]?.men)
-      ) {
-        return "Vous pouvez modifier votre pronostic tant que la catégorie est active.";
-      } else if (this.predictionSubmitted) {
-        return "Pronostic déjà effectué pour ce jour.";
-      } else if (!this.isValidForm) {
-        return "Veuillez remplir tous les champs pour valider votre pronostic.";
-      } else if (!this.hasActiveCategories) {
-        return "Les pronostics ne sont pas encore ouverts pour cette catégorie.";
-      } else {
-        return "Vous pouvez soumettre votre pronostic.";
-      }
-    },
-  },
+// ── Helpers ───────────────────────────────────────────────────────────────
+const checkMobile = () => {
+  isMobile.value = window.innerWidth <= 768;
 };
+
+const initializePredictions = () => {
+  competitionFormat.value.forEach((dayFormat) => {
+    dayFormat.weightIds.forEach((weightId) => {
+      if (!predictions.value[weightId])
+        predictions.value[weightId] = { places: ["", "", "", ""], options: [] };
+    });
+  });
+};
+
+const isActive = (weightId: number): boolean => {
+  if (!props.startingDay) return false;
+  const dayFormat = competitionFormat.value.find((d) =>
+    d.weightIds.includes(weightId),
+  );
+  if (!dayFormat) return false;
+  const fightDate = new Date(props.startingDay);
+  fightDate.setDate(fightDate.getDate() + dayFormat.day - 1);
+  fightDate.setHours(currentCompetition.fightStartHour, 0, 0, 0);
+  const closeAt = new Date(
+    fightDate.getTime() - CLOSING_OFFSET_MINUTES * 60_000,
+  );
+  const openAt = new Date(fightDate);
+  openAt.setDate(openAt.getDate() - 1);
+  openAt.setHours(8, 0, 0, 0);
+  return new Date() >= openAt && new Date() < closeAt;
+};
+
+const isCategoryPredicted = (weightId: number): boolean => {
+  const preds = predictionObject.value?.predictions;
+  if (!preds) return false;
+  return CATEGORIES[weightId].gender === "women"
+    ? !!preds.womenFirstPlace
+    : !!preds.menFirstPlace;
+};
+
+const getAvailableOptions = (
+  weightId: number,
+  placeIndex: number,
+): string[] => {
+  const pred = predictions.value[weightId];
+  if (!pred) return [];
+  const taken = pred.places.filter(
+    (_, i) => i !== placeIndex && pred.places[i],
+  );
+  return pred.options.filter((o) => !taken.includes(o));
+};
+
+const buildPredictionPayload = (): Record<string, string> => {
+  const payload: Record<string, string> = {};
+  const keys = ["FirstPlace", "SecondPlace", "ThirdPlace1", "ThirdPlace2"];
+  selectedDayCategories.value.forEach((cat) => {
+    const prefix = cat.gender === "women" ? "women" : "men";
+    predictions.value[cat.weightId]?.places.forEach((place, i) => {
+      payload[`${prefix}${keys[i]}`] = place;
+    });
+  });
+  return payload;
+};
+
+// ── API ───────────────────────────────────────────────────────────────────
+const fetchCompetitors = async (weightId: number): Promise<string[]> => {
+  const url = `https://data.ijf.org/api/get_json?access_token=&params%5Baction%5D=competition.competitors&params%5Bid_competition%5D=${currentCompetition.id}&params%5Bid_weight%5D=${weightId}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const data = await response.json();
+  const genderKey = CATEGORIES[weightId].gender === "men" ? 1 : 2;
+  const categoryData = data.categories?.[genderKey]?.[weightId];
+  if (!categoryData?.persons) return [];
+  return Object.values(categoryData.persons as Record<string, Competitor>)
+    .sort(
+      (a, b) => (a.ranking_place ?? Infinity) - (b.ranking_place ?? Infinity),
+    )
+    .map(
+      (p) =>
+        `${p.family_name.toUpperCase()} ${p.given_name} (${p.country_short})`,
+    );
+};
+
+const loadCompetitorsData = async (day: number) => {
+  const dayFormat = competitionFormat.value.find((d) => d.day === day);
+  if (!dayFormat) return;
+  loading.value = true;
+  error.value = null;
+  try {
+    await Promise.all(
+      dayFormat.weightIds.map(async (weightId) => {
+        predictions.value[weightId].options = await fetchCompetitors(weightId);
+      }),
+    );
+  } catch (err) {
+    error.value =
+      err instanceof Error
+        ? `Impossible de charger les données : ${err.message}`
+        : "Erreur inconnue";
+  } finally {
+    loading.value = false;
+  }
+};
+
+const selectDay = async (day: number) => {
+  selectedDay.value = day;
+  const token = localStorage.getItem("token");
+  if (!token) {
+    await loadCompetitorsData(day);
+    return;
+  }
+  try {
+    const response = await fetch(`${API_URL}/api/predictions`, {
+      method: predictionSubmitted.value ? "PUT" : "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        predictions: buildPredictionPayload(),
+        competitionDay: day,
+        competitionId: currentCompetition.id,
+        date: new Date().toISOString().split("T")[0],
+      }),
+    });
+    if (response.ok) {
+      const result = await response.json();
+      predictionObject.value = result.prediction;
+      predictionSubmitted.value = true;
+    } else {
+      predictionObject.value = null;
+      predictionSubmitted.value = false;
+    }
+  } catch (err) {
+    console.error("Erreur réseau:", err);
+  }
+  await loadCompetitorsData(day);
+};
+
+const validatePrediction = async () => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  try {
+    const response = await fetch(`${API_URL}/api/predictions`, {
+      method: predictionSubmitted.value ? "PUT" : "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        predictions: buildPredictionPayload(),
+        competitionDay: selectedDay.value,
+        competitionId: currentCompetition.id,
+        date: new Date().toISOString().split("T")[0],
+      }),
+    });
+    if (response.ok) {
+      predictionSubmitted.value = true;
+    } else {
+      console.warn("Erreur backend:", await response.text());
+    }
+  } catch (err) {
+    console.error("Erreur réseau:", err);
+  }
+};
+
+// ── Lifecycle ─────────────────────────────────────────────────────────────
+onMounted(() => {
+  window.addEventListener("resize", checkMobile);
+  initializePredictions();
+});
+onUnmounted(() => window.removeEventListener("resize", checkMobile));
 </script>
 
-<style>
-.btn {
-  border: 2px solid slategray;
-  border-radius: 5px;
-  transition: background-color 0.3s, transform 0.2s;
+<style scoped>
+.tour-page {
+  --blue: #2d508e;
+  width: 100%;
 }
-.btn:hover {
-  background-color: #007bff;
+
+/* ── Hero ───────────────────────────────────────────────────────────────── */
+.hero {
+  background: linear-gradient(160deg, #f8faff 0%, #eef3fd 100%);
+  text-align: center;
+  padding: 3rem 1.5rem 2rem;
+}
+.hero-title {
+  font-size: clamp(1.6rem, 4vw, 3rem);
+  font-weight: 800;
+  color: var(--blue);
+  margin-bottom: 1.25rem;
+  line-height: 1.15;
+}
+.hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.badge-countdown {
+  background: #fff7ed;
+  color: #9a3412;
+  border: 1px solid #fed7aa;
+}
+.badge-live {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+.badge-info {
+  background: rgba(45, 80, 142, 0.07);
+  color: var(--blue);
+  border: 1px solid rgba(45, 80, 142, 0.18);
+}
+
+/* ── Day tabs ───────────────────────────────────────────────────────────── */
+.days-section {
+  padding: 1.5rem 1.5rem 0;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.days-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.day-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  background: white;
+  color: #2d508e;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1.3;
+}
+.day-tab-sub {
+  font-size: 0.68rem;
+  font-weight: 400;
+  opacity: 0.65;
+  margin-top: 2px;
+}
+.day-tab:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  transform: translateY(-2px);
+}
+.day-tab.active {
+  background: var(--blue);
+  border-color: var(--blue);
   color: white;
-  transform: scale(1.05);
 }
-.btn:active {
-  transform: scale(0.95);
+.day-tab.active .day-tab-sub {
+  opacity: 0.8;
 }
-.prediction-container {
-  border: 2px solid slategray;
+
+/* ── Content ────────────────────────────────────────────────────────────── */
+.content-section {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1.5rem;
 }
-.day-title {
-  border: 2px solid slategray;
+
+/* ── Skeleton ───────────────────────────────────────────────────────────── */
+.skeleton-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
-.prediction-select {
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-  padding: 8px;
-  transition: border-color 0.3s;
+.skeleton-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
-.prediction-select:focus {
-  border-color: #007bff;
+.skeleton-line {
+  height: 13px;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  border-radius: 6px;
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ── Alert ──────────────────────────────────────────────────────────────── */
+.alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  gap: 1rem;
+}
+.alert-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+.retry-btn {
+  padding: 0.35rem 0.9rem;
+  background: white;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #991b1b;
+  font-size: 0.82rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.retry-btn:hover {
+  background: #fef2f2;
+}
+
+/* ── Info banner ────────────────────────────────────────────────────────── */
+.info-banner {
+  background: rgba(45, 80, 142, 0.06);
+  border: 1px solid rgba(45, 80, 142, 0.14);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-size: 0.88rem;
+  color: var(--blue);
+  margin-bottom: 1.25rem;
+  text-align: center;
+}
+
+/* ── Category card ──────────────────────────────────────────────────────── */
+.category-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1.4rem;
+  margin-bottom: 1rem;
+  transition: box-shadow 0.2s;
+}
+.category-card:hover {
+  box-shadow: 0 4px 20px rgba(45, 80, 142, 0.08);
+}
+.card-inactive {
+  opacity: 0.6;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--blue);
+}
+.status-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+}
+.status-open {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+.status-closed {
+  background: #f8fafc;
+  color: #94a3b8;
+  border: 1px solid #e2e8f0;
+}
+
+/* ── Place rows ─────────────────────────────────────────────────────────── */
+.places-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.place-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.place-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+  width: 95px;
+  flex-shrink: 0;
+}
+.place-select {
+  flex: 1;
+  padding: 0.5rem 0.8rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8faff;
+  color: #1e293b;
+  font-size: 0.88rem;
+  cursor: pointer;
   outline: none;
+  transition: border-color 0.2s, background 0.2s;
 }
-@media screen and (max-width: 768px) {
-  select {
-    max-width: 300px;
+.place-select:focus {
+  border-color: var(--blue);
+  background: white;
+}
+.select-disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* ── Validate ───────────────────────────────────────────────────────────── */
+.validate-section {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+.btn-validate {
+  width: 100%;
+  padding: 0.85rem;
+  background: var(--blue);
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.btn-validate:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+.btn-validate:active {
+  transform: scale(0.98);
+}
+.btn-validate-disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+}
+.btn-validate-disabled:hover {
+  opacity: 1;
+  transform: none;
+}
+
+.message-box {
+  margin-top: 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.message-success {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+.message-error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+.message-info {
+  background: rgba(45, 80, 142, 0.06);
+  color: var(--blue);
+  border: 1px solid rgba(45, 80, 142, 0.18);
+}
+
+/* ── No day hint ────────────────────────────────────────────────────────── */
+.no-day-hint {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: #94a3b8;
+  font-size: 1rem;
+}
+
+/* ── Animations ─────────────────────────────────────────────────────────── */
+.fade-up {
+  animation: fadeInUp 0.6s ease both;
+  animation-delay: var(--delay, 0ms);
+}
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
   }
-  .prediction-container {
-    padding: 10px;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  .btn {
-    margin-bottom: 10px;
+}
+
+/* ── Mobile ─────────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .place-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  .place-label {
+    width: auto;
+  }
+  .place-select {
+    width: 100%;
+  }
+  .days-tabs {
+    gap: 0.35rem;
+  }
+  .day-tab {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.82rem;
   }
 }
 </style>

@@ -1,126 +1,93 @@
 <template>
   <div class="app-layout">
     <SideMenu :links="links" :linkRoutes="linkRoutes" />
-    <router-view
-      v-bind="{
-        ...(currentRouteName !== 'register' && {
-          competitionDays,
-          currentCompetitionDay,
-          currentFormattedDate,
-          competitionId,
-          competitionName,
-          formattedStartingDay,
-          formattedEndingDay,
-          endingDay,
-          startingDay,
-          competitions,
-          countDown
-        }),
-      }"
-    />
-    <!-- <AppFooter /> -->
+    <router-view v-bind="currentRouteName !== 'register' ? sharedProps : {}" />
   </div>
 </template>
 
-<script>
-import SideMenu from "./components/SideMenu.vue";
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { currentCompetition } from '@/config/currentCompetition'
+import { COMPETITION_FORMATS } from '@/config/competitionFormats'
+import SideMenu from './components/SideMenu.vue'
 
-export default {
-  name: "App",
-  components: {
-    SideMenu,
-  },
-  data() {
-    return {
-      links: [
-        "Accueil",
-        "Compétition en cours",
-        "Classement en cours",
-        "Archives",
-      ],
-      linkRoutes: {
-        Accueil: "/",
-        "Compétition en cours": "/ongoing-tour",
-        "Classement en cours": "/ongoing-predictions-ranking",
-        Archives: "/archives",
-      },
-      competitionDays: [
-        { day: 1, events: ["Women -48kg", "Men -60kg"] },
-        { day: 2, events: ["Women -52kg", "Men -66kg"] },
-        { day: 3, events: ["Women -57kg", "Men -73kg"] },
-        { day: 4, events: ["Women -63kg", "Men -81kg"] },
-        { day: 5, events: ["Women -70kg", "Men -90kg"] },
-        { day: 6, events: ["Women -78kg", "Men -100kg"] },
-        { day: 7, events: ["Women +78kg", "Men +100kg"] },
-      ],
-      competitionId: 2877,
-      currentCompetitionDay: null,
-      currentFormattedDate: this.formatDate(new Date()),
-      competitions: [],
-      competitionName: null,
-      startingDay: null,
-      endingDay: null,
-      formattedStartingDay: null,
-      formattedEndingDay: null,
-      countDown: null,
-    };
-  },
-  mounted() {
-    const today = new Date();
-
-    this.fetchCompetitionInfos().then(() => {
-      if (!this.startingDay) return;
-
-      const startingDate = new Date(this.startingDay);
-
-      const diffInMs = startingDate - today;
-      this.countDown = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
-
-      const diffInDays = Math.floor((today - startingDate) / (1000 * 60 * 60 * 24));
-      if (diffInDays >= 0 && diffInDays < this.competitionDays.length) {
-        this.currentCompetitionDay = diffInDays + 1;
-      } else {
-        this.currentCompetitionDay = null;
-      }
-    });
-  },
-  methods: {
-    setcurrentCompetitionDay(day) {
-      this.currentCompetitionDay = day;
-    },
-    async fetchCompetitionInfos() {
-      try {
-        const response = await fetch(
-          `https://data.ijf.org/api/get_json?params%5Baction%5D=general.get_one&params%5Bmodule%5D=competition&params%5Bid%5D=${this.competitionId}`
-        );
-        const data = await response.json();
-        this.competitionName = data?.title || "Compétition inconnue";
-        this.startingDay = data?.date_from || null;
-        this.endingDay = data?.date_to || null;
-        this.formattedStartingDay = this.formatDate(data?.date_from);
-        this.formattedEndingDay = this.formatDate(data?.date_to);
-      } catch (error) {
-        console.error(
-          "Erreur lors de la récupération de la compétition :",
-          error
-        );
-        this.competitionName = "Erreur lors du chargement";
-      }
-    },
-    formatDate(date) {
-  const parsedDate = typeof date === "string" ? new Date(date) : date;
-  const day = String(parsedDate.getDate()).padStart(2, "0");
-  const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
-  const year = parsedDate.getFullYear();
-  return `${day}/${month}/${year}`;
+// ── Navigation ────────────────────────────────────────────────────────────
+const links: string[] = ['Accueil', 'Compétition en cours', 'Classement en cours', 'Archives']
+const linkRoutes: Record<string, string> = {
+  'Accueil':                '/',
+  'Compétition en cours':   '/ongoing-tour',
+  'Classement en cours':    '/ongoing-predictions-ranking',
+  'Archives':               '/archives',
 }
-  },
-  computed: {
-    currentRouteName() {
-      return this.$route?.name || "";
-    },
-  },
-};
+
+// ── State ─────────────────────────────────────────────────────────────────
+const competitionName      = ref('Chargement...')
+const startingDay          = ref<string | null>(null)
+const endingDay            = ref<string | null>(null)
+const formattedStartingDay = ref('')
+const formattedEndingDay   = ref('')
+const currentCompetitionDay = ref<number | null>(null)
+const countDown            = ref(0)
+
+// ── Computed ──────────────────────────────────────────────────────────────
+const route = useRoute()
+const currentRouteName = computed(() => route.name as string ?? '')
+
+const sharedProps = computed(() => ({
+  competitionName:        competitionName.value,
+  startingDay:            startingDay.value,
+  endingDay:              endingDay.value,
+  formattedStartingDay:   formattedStartingDay.value,
+  formattedEndingDay:     formattedEndingDay.value,
+  currentCompetitionDay:  currentCompetitionDay.value,
+  countDown:              countDown.value,
+}))
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+const formatDate = (date: string | Date | null): string => {
+  if (!date) return ''
+  const d = typeof date === 'string' ? new Date(date) : date
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`
+}
+
+// ── API ───────────────────────────────────────────────────────────────────
+const fetchCompetitionInfos = async (): Promise<void> => {
+  try {
+    const response = await fetch(
+      `https://data.ijf.org/api/get_json?params%5Baction%5D=general.get_one&params%5Bmodule%5D=competition&params%5Bid%5D=${currentCompetition.id}`
+    )
+    const data = await response.json()
+    competitionName.value      = data?.title     ?? 'Compétition inconnue'
+    startingDay.value          = data?.date_from  ?? null
+    endingDay.value            = data?.date_to    ?? null
+    formattedStartingDay.value = formatDate(data?.date_from)
+    formattedEndingDay.value   = formatDate(data?.date_to)
+  } catch (err) {
+    console.error('Erreur fetchCompetitionInfos:', err)
+    competitionName.value = 'Erreur lors du chargement'
+  }
+}
+
+// ── Lifecycle ─────────────────────────────────────────────────────────────
+onMounted(async () => {
+  await fetchCompetitionInfos()
+  if (!startingDay.value) return
+
+  const today      = new Date()
+  const startDate  = new Date(startingDay.value)
+  const totalDays  = COMPETITION_FORMATS[currentCompetition.type].length
+
+  // Countdown avant le début
+  const diffMs = startDate.getTime() - today.getTime()
+  countDown.value = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+
+  // Jour de compétition en cours
+  const daysSinceStart = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+  currentCompetitionDay.value = (daysSinceStart >= 0 && daysSinceStart < totalDays)
+    ? daysSinceStart + 1
+    : null
+})
 </script>
 
 <style scoped>
@@ -128,14 +95,12 @@ export default {
   display: flex;
   flex-direction: column;
 }
-
 @media screen and (min-width: 1024px) {
   .app-layout {
     flex-direction: row;
     min-height: 100vh;
   }
 }
-  
 * {
   font-family: 'Poppins', sans-serif !important;
 }

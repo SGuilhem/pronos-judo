@@ -4,13 +4,11 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "AppFooter",
-};
+<script setup lang="ts">
+// Pas de logique
 </script>
 
-<style>
+<style scoped>
 .footer {
   position: fixed;
   bottom: 0;
@@ -21,9 +19,4 @@ export default {
   text-align: center;
   padding: 10px 0;
 }
-/* @media screen and (max-width: 768px) {
-  .footer {
-    position: sticky;
-  }
-} */
 </style>
