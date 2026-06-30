@@ -1,21 +1,14 @@
-require("dotenv").config({ path: "./backend/.env" });
+const { Resend } = require('resend');
 
-const nodemailer = require("nodemailer");
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-const sendEmail = async ({ to, subject, text }) => {
-  const transporter = nodemailer.createTransport({
-    service: "Gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
+const sendEmail = async ({ to, subject, text, html }) => {
+  await resend.emails.send({
+    from: 'Pronos Judo <onboarding@resend.dev>',
     to,
     subject,
     text,
+    html,
   });
 };
 
