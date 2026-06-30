@@ -11,26 +11,26 @@ router.get("/", async (req, res) => {
   }
 });
 
-
 router.post("/", async (req, res) => {
   try {
     const { competitionId, competitionName, leaderboard, startingDay, endingDay } = req.body;
 
-    const existingCompetition = await ArchivedCompetitions.findOne({ competitionId });
-    if (existingCompetition) {
-      return res.status(400).json({ message: "La compétition est déjà archivée." });
-    }
+    const archivedCompetition = await ArchivedCompetitions.findOneAndUpdate(
+      { competitionId },                          // filtre
+      {
+        competitionId,
+        title: competitionName,
+        date_from: startingDay,
+        date_to: endingDay,
+        leaderboard,
+      },
+      { upsert: true, new: true }                 // crée si inexistant, met à jour sinon
+    );
 
-    const archivedCompetition = new ArchivedCompetitions({
-      competitionId,
-      title: competitionName,
-      date_from: startingDay,
-      date_to: endingDay,
-      leaderboard,
+    res.status(200).json({
+      message: "Compétition archivée / mise à jour avec succès.",
+      data: archivedCompetition,
     });
-
-    await archivedCompetition.save();
-    res.status(201).json({ message: "Compétition archivée avec succès." });
   } catch (error) {
     console.error("Erreur lors de l'archivage :", error);
     res.status(500).json({ message: "Erreur interne du serveur." });

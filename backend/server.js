@@ -25,9 +25,13 @@ mongoose.connect(process.env.MONGO_URI)
 // Middleware
 app.use(express.json());
 app.use(cors({
-    origin: 'http://localhost:8080',
-    credentials: true
-}));
+  origin: [
+    'http://localhost:8080',   // Vue CLI (ancien)
+    'http://localhost:5173',   // Vite (nouveau)
+    'https://pronos-judo.onrender.com', // Production
+  ],
+  credentials: true
+}))
 
 
   const PORT = process.env.PORT || 5000;
