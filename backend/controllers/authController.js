@@ -72,6 +72,17 @@ exports.login = async (req, res) => {
   }
 };
 
+exports.register = async (req, res) => {
+  const { username, email, password } = req.body;
+
+  // Validation mot de passe
+  const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}$/;
+  if (!passwordRegex.test(password)) {
+    return res.status(400).json({
+      message: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, un chiffre et un symbole."
+    });
+  };
+
 exports.verifyToken = (req, res) => {
     const token = req.body.token;
     if (!token) {

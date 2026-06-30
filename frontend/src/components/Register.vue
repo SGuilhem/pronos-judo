@@ -1,8 +1,6 @@
 <template>
   <div class="register-page">
     <div class="register-card">
-
-      <!-- Header dynamique selon le mode -->
       <div class="card-header">
         <span class="hero-tag">{{ headerTag }}</span>
         <h1 class="card-title">{{ headerTitle }}</h1>
@@ -16,9 +14,7 @@
           <input type="email" v-model="email" required placeholder="exemple@email.com" />
         </div>
         <p v-if="error" class="msg-error">{{ error }}</p>
-        <div v-if="emailSent" class="msg-success">
-          ✓ Un mail de réinitialisation vous a été envoyé.
-        </div>
+        <div v-if="emailSent" class="msg-success">✓ Un mail de réinitialisation vous a été envoyé.</div>
         <button type="submit" class="btn-submit" :disabled="emailSent">
           Envoyer le mail de réinitialisation
         </button>
@@ -30,13 +26,25 @@
           <label>Nouveau mot de passe</label>
           <input type="password" v-model="newPassword" required placeholder="••••••••" />
         </div>
+        <div class="password-rules">
+          <div
+            v-for="rule in passwordRules"
+            :key="rule.label"
+            :class="['rule', rule.test(newPassword) ? 'valid' : 'invalid']"
+          >
+            <span class="rule-icon">{{ rule.test(newPassword) ? '✓' : '✗' }}</span>
+            {{ rule.label }}
+          </div>
+        </div>
         <div class="field">
           <label>Confirmer le mot de passe</label>
           <input type="password" v-model="confirmNewPassword" required placeholder="••••••••" />
         </div>
         <p v-if="error" class="msg-error">{{ error }}</p>
         <p v-if="success" class="msg-success">{{ success }}</p>
-        <button type="submit" class="btn-submit">Mettre à jour le mot de passe</button>
+        <button type="submit" class="btn-submit" :disabled="!isPasswordValid(newPassword)">
+          Mettre à jour le mot de passe
+        </button>
       </form>
 
       <!-- Formulaire 3 : inscription -->
@@ -53,22 +61,32 @@
           <label>Mot de passe</label>
           <input type="password" v-model="password" required placeholder="••••••••" />
         </div>
+        <div class="password-rules">
+          <div
+            v-for="rule in passwordRules"
+            :key="rule.label"
+            :class="['rule', rule.test(password) ? 'valid' : 'invalid']"
+          >
+            <span class="rule-icon">{{ rule.test(password) ? '✓' : '✗' }}</span>
+            {{ rule.label }}
+          </div>
+        </div>
         <div class="field">
           <label>Confirmer le mot de passe</label>
           <input type="password" v-model="confirmPassword" required placeholder="••••••••" />
         </div>
         <p v-if="error" class="msg-error">{{ error }}</p>
         <p v-if="success" class="msg-success">{{ success }}</p>
-        <button type="submit" class="btn-submit">S'inscrire</button>
+        <button type="submit" class="btn-submit" :disabled="!isPasswordValid(password)">
+          S'inscrire
+        </button>
       </form>
 
-      <!-- Lien retour -->
       <div class="card-footer">
         <router-link :to="{ name: 'LandingPage' }" class="back-link">
           ← Retour à l'accueil
         </router-link>
       </div>
-
     </div>
   </div>
 </template>
@@ -92,17 +110,27 @@ const route     = useRoute()
 const authStore = useAuthStore()
 
 // Form fields
-const username         = ref('')
-const email            = ref('')
-const password         = ref('')
-const confirmPassword  = ref('')
-const newPassword      = ref('')
+const username           = ref('')
+const email              = ref('')
+const password           = ref('')
+const confirmPassword    = ref('')
+const newPassword        = ref('')
 const confirmNewPassword = ref('')
-const success  = ref('')
-const error    = ref('')
-const emailSent = ref(false)
+const success            = ref('')
+const error              = ref('')
+const emailSent          = ref(false)
 
-// Header dynamique selon le mode
+// ── Règles de mot de passe ──
+const passwordRules = [
+  { test: (p: string) => p.length >= 8,            label: '8 caractères minimum' },
+  { test: (p: string) => /[A-Z]/.test(p),          label: 'Une majuscule' },
+  { test: (p: string) => /[0-9]/.test(p),          label: 'Un chiffre' },
+  { test: (p: string) => /[^A-Za-z0-9]/.test(p),  label: 'Un symbole (!@#...)' },
+]
+
+const isPasswordValid = (p: string) => passwordRules.every(r => r.test(p))
+
+// ── Header dynamique ──
 const headerTag = computed(() => {
   if (props.passwordReset) return '🔑 Récupération'
   if (props.resetPassword) return '🔒 Sécurité'
@@ -119,9 +147,13 @@ const headerSub = computed(() => {
   return 'Rejoignez Interbudo Pronos et commencez à pronostiquer !'
 })
 
-// Actions
+// ── Actions ──
 const register = async () => {
   try {
+    if (!isPasswordValid(password.value)) {
+      error.value = 'Le mot de passe ne respecte pas les règles de sécurité.'
+      return
+    }
     if (password.value !== confirmPassword.value) {
       error.value = 'Les mots de passe ne correspondent pas.'
       return
@@ -155,6 +187,10 @@ const requestPasswordReset = async () => {
 
 const resetPasswordSubmit = async () => {
   try {
+    if (!isPasswordValid(newPassword.value)) {
+      error.value = 'Le mot de passe ne respecte pas les règles de sécurité.'
+      return
+    }
     if (newPassword.value !== confirmNewPassword.value) {
       error.value = 'Les mots de passe ne correspondent pas.'
       return
@@ -259,9 +295,35 @@ const resetPasswordSubmit = async () => {
   border-color: #2d508e;
   box-shadow: 0 0 0 3px rgba(45, 80, 142, 0.1);
 }
-.field input::placeholder {
-  color: #a0aec0;
+.field input::placeholder { color: #a0aec0; }
+
+/* ── RÈGLES MOT DE PASSE ── */
+.password-rules {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 0.75rem 1rem;
+  background: rgba(45, 80, 142, 0.03);
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-top: -0.25rem;
 }
+.rule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+.rule-icon {
+  font-size: 0.75rem;
+  font-weight: 700;
+  width: 16px;
+  text-align: center;
+}
+.rule.valid  { color: #16a34a; }
+.rule.invalid { color: #94a3b8; }
 
 /* ── MESSAGES ── */
 .msg-error {
@@ -299,8 +361,8 @@ const resetPasswordSubmit = async () => {
   transition: background 0.2s ease, transform 0.15s ease;
   width: 100%;
 }
-.btn-submit:hover  { background: #1e3461; transform: translateY(-1px); }
-.btn-submit:active { transform: translateY(0); }
+.btn-submit:hover   { background: #1e3461; transform: translateY(-1px); }
+.btn-submit:active  { transform: translateY(0); }
 .btn-submit:disabled {
   background: #a0aec0;
   cursor: not-allowed;
