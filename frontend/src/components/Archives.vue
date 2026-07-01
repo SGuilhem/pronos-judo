@@ -25,7 +25,7 @@
         </div>
 
         <!-- Empty state -->
-        <div v-else-if="archivedCompetitions.length === 0" class="empty-card">
+        <div v-else-if="!isLoading && archivedCompetitions.length === 0" class="empty-card">
           <div class="empty-icon">📂</div>
           <p class="empty-title">Aucune archive disponible</p>
           <p class="empty-sub">Les compétitions passées apparaîtront ici.</p>
@@ -85,7 +85,7 @@ import type { ArchivedCompetition } from "@/types";
 
 const archivedCompetitions = ref<ArchivedCompetition[]>([]);
 const activeEventIndex = ref<number | null>(null);
-const isLoading = ref(false);
+const isLoading = ref(true);
 const isMobile = ref(window.innerWidth <= 768);
 
 const checkMobile = () => {

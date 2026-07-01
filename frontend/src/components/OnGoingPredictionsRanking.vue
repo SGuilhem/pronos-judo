@@ -32,13 +32,25 @@
     <section class="ranking-section">
       <div class="section-inner">
 
+        <!-- Loading state -->
+    <div v-if="isLoading" class="loading-podium">
+      <div class="skeleton-podium">
+        <div class="skel-card silver" />
+        <div class="skel-card gold"   />
+        <div class="skel-card bronze" />
+      </div>
+      <div class="loading-list">
+        <div v-for="n in 3" :key="n" class="skeleton-card" :style="`--i:${n}`" />
+      </div>
+    </div>
         <!-- Empty state -->
-        <div v-if="leaderboard.length === 0" class="empty-card">
+        <div v-else-if="!isLoading && leaderboard.length === 0" class="empty-card">
           <div class="empty-icon">📊</div>
           <p class="empty-title">Aucun résultat à afficher</p>
           <p class="empty-sub">Les scores apparaîtront une fois les premières prédictions validées.</p>
         </div>
-
+        
+        <!-- Leaderboard -->
         <template v-else>
           <!-- Podium top 3 -->
           <div class="podium-row">
@@ -91,7 +103,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { CATEGORIES } from '@/config/categories'
 import { COMPETITION_FORMATS } from '@/config/competitionFormats'
 import { currentCompetition } from '@/config/currentCompetition'
-import type { Competitor } from '@/types'
+import type { Competitor, LeaderboardEntry, User, UserPrediction, RawPrediction } from '@/types'
 
 // ── Props ─────────────────────────────────────────────────────────────────
 const props = defineProps<{
@@ -104,30 +116,12 @@ const props = defineProps<{
   countDown:             number
 }>()
 
-// ── Types ─────────────────────────────────────────────────────────────────
-interface UserPrediction {
-  event:       string
-  firstPlace:  string
-  secondPlace: string
-  thirdPlace1: string
-  thirdPlace2: string
-}
-
-interface User {
-  username:    string
-  predictions: UserPrediction[]
-}
-
-interface LeaderboardEntry {
-  username: string
-  points:   number
-}
-
 // ── State ─────────────────────────────────────────────────────────────────
 const isMobile   = ref(window.innerWidth <= 768)
 const results    = ref<Record<string, Competitor[]>>({})
 const leaderboard = ref<LeaderboardEntry[]>([])
 const users      = ref<User[]>([])
+const isLoading = ref(true)
 
 // ── Computed ──────────────────────────────────────────────────────────────
 const competitionFormat = computed(() => COMPETITION_FORMATS[currentCompetition.type])
@@ -310,10 +304,12 @@ const archiveLeaderboard = async (): Promise<void> => {
 // ── Lifecycle ─────────────────────────────────────────────────────────────
 onMounted(async () => {
   window.addEventListener('resize', checkMobile)
+  isLoading.value = true
   await fetchUserPredictions()
   await fetchResults()
   calculateUserScores()
   await archiveLeaderboard()
+  isLoading.value = false
 })
 
 onUnmounted(() => window.removeEventListener('resize', checkMobile))
@@ -431,6 +427,46 @@ onUnmounted(() => window.removeEventListener('resize', checkMobile))
 .empty-icon  { font-size: 2.5rem; margin-bottom: 1rem; }
 .empty-title { font-size: 1.1rem; font-weight: 600; color: #1e3461; margin-bottom: 0.5rem; }
 .empty-sub   { color: #718096; font-size: 0.9rem; }
+
+/* ── LOADING ── */
+.loading-podium {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.skeleton-podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 1rem;
+}
+.skel-card {
+  flex: 1;
+  max-width: 210px;
+  border-radius: 16px;
+  background: linear-gradient(90deg, #f0f4ff 25%, #e2e8f0 50%, #f0f4ff 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+.skel-card.gold   { height: 220px; }
+.skel-card.silver { height: 187px; }
+.skel-card.bronze { height: 154px; }
+.loading-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.skeleton-card {
+  height: 58px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f0f4ff 25%, #e2e8f0 50%, #f0f4ff 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite, fadeInUp 0.4s ease calc(var(--i, 0) * 0.06s) both;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
 
 /* ── PODIUM ── */
 .podium-row {
