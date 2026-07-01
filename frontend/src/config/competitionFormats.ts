@@ -1,9 +1,4 @@
-export type CompetitionType = 'worlds' | 'euros' | 'grand-slam'
-
-export interface DayFormat {
-  day: number
-  weightIds: number[]
-}
+import type { CompetitionType, DayFormat } from '@/types'
 
 export const COMPETITION_FORMATS: Record<CompetitionType, DayFormat[]> = {
   worlds: [

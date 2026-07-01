@@ -1,116 +1,135 @@
 <template>
   <div class="archives-page">
-
     <!-- Hero -->
     <div class="archives-hero">
       <div class="hero-inner">
         <span class="hero-tag">📁 Historique</span>
         <h1 class="hero-title">Archives des pronos</h1>
-        <p class="hero-sub">Retrouvez les classements de toutes les compétitions passées.</p>
+        <p class="hero-sub">
+          Retrouvez les classements de toutes les compétitions passées.
+        </p>
       </div>
     </div>
 
     <!-- List -->
     <section class="archives-section">
       <div class="section-inner">
+        <!-- Loading state -->
+        <div v-if="isLoading" class="loading-list">
+          <div
+            v-for="n in 4"
+            :key="n"
+            class="skeleton-card"
+            :style="`--i:${n}`"
+          />
+        </div>
 
         <!-- Empty state -->
-        <div v-if="archivedCompetitions.length === 0" class="empty-card">
+        <div v-else-if="archivedCompetitions.length === 0" class="empty-card">
           <div class="empty-icon">📂</div>
           <p class="empty-title">Aucune archive disponible</p>
           <p class="empty-sub">Les compétitions passées apparaîtront ici.</p>
         </div>
 
         <!-- Accordion compétitions -->
-        <div
-          v-for="(competition, index) in archivedCompetitions"
-          :key="competition.competitionId"
-          class="comp-card"
-          :style="`--i:${index}`"
-        >
-          <!-- Header cliquable -->
-          <div class="comp-header" @click="toggleEvent(index)">
-            <div class="comp-info">
-              <span class="comp-title">{{ competition.title }}</span>
-              <span class="comp-dates">{{ competition.date_from }} → {{ competition.date_to }}</span>
+        <template v-else>
+          <div
+            v-for="(competition, index) in archivedCompetitions"
+            :key="competition.competitionId"
+            class="comp-card"
+            :style="`--i:${index}`"
+          >
+            <!-- Header cliquable -->
+            <div class="comp-header" @click="toggleEvent(index)">
+              <div class="comp-info">
+                <span class="comp-title">{{ competition.title }}</span>
+                <span class="comp-dates"
+                  >{{ competition.date_from }} → {{ competition.date_to }}</span
+                >
+              </div>
+              <span
+                class="chevron"
+                :class="{ rotated: activeEventIndex === index }"
+                >▼</span
+              >
             </div>
-            <span class="chevron" :class="{ rotated: activeEventIndex === index }">▼</span>
-          </div>
 
-          <!-- Leaderboard déroulant -->
-          <div v-if="activeEventIndex === index" class="comp-leaderboard">
-            <div
-              v-for="(user, i) in competition.leaderboard"
-              :key="i"
-              class="lb-row"
-              :style="`--i:${i}`"
-            >
-              <span class="lb-position">
-                <span v-if="i === 0">🥇</span>
-                <span v-else-if="i === 1">🥈</span>
-                <span v-else-if="i === 2">🥉</span>
-                <span v-else class="lb-num">{{ i + 1 }}</span>
-              </span>
-              <span class="lb-username">{{ user.username }}</span>
-              <span class="lb-points">{{ user.points }} pts</span>
+            <!-- Leaderboard déroulant -->
+            <div v-if="activeEventIndex === index" class="comp-leaderboard">
+              <div
+                v-for="(user, i) in competition.leaderboard"
+                :key="i"
+                class="lb-row"
+                :style="`--i:${i}`"
+              >
+                <span class="lb-position">
+                  <span v-if="i === 0">🥇</span>
+                  <span v-else-if="i === 1">🥈</span>
+                  <span v-else-if="i === 2">🥉</span>
+                  <span v-else class="lb-num">{{ i + 1 }}</span>
+                </span>
+                <span class="lb-username">{{ user.username }}</span>
+                <span class="lb-points">{{ user.points }} pts</span>
+              </div>
             </div>
           </div>
-
-        </div>
+        </template>
       </div>
     </section>
-
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from "vue";
+import type { ArchivedCompetition } from "@/types";
 
-interface LeaderboardEntry {
-  username: string
-  points: number
-}
+const archivedCompetitions = ref<ArchivedCompetition[]>([]);
+const activeEventIndex = ref<number | null>(null);
+const isLoading = ref(false);
+const isMobile = ref(window.innerWidth <= 768);
 
-interface ArchivedCompetition {
-  competitionId: string
-  title: string
-  date_from: string
-  date_to: string
-  leaderboard: LeaderboardEntry[]
-}
-
-const archivedCompetitions = ref<ArchivedCompetition[]>([])
-const activeEventIndex = ref<number | null>(null)
-const isMobile = ref(window.innerWidth <= 768)
-
-const checkMobile = () => { isMobile.value = window.innerWidth <= 768 }
+const checkMobile = () => {
+  isMobile.value = window.innerWidth <= 768;
+};
 const toggleEvent = (index: number) => {
-  activeEventIndex.value = activeEventIndex.value === index ? null : index
-}
+  activeEventIndex.value = activeEventIndex.value === index ? null : index;
+};
 
 const fetchArchivedCompetitions = async () => {
+  isLoading.value = true
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/archived-competitions`, {
-      headers: { 'Cache-Control': 'no-cache' },
-    })
-    if (!response.ok) throw new Error('Erreur lors de la récupération des compétitions archivées')
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/archived-competitions`,
+      {
+        headers: { "Cache-Control": "no-cache" },
+      },
+    );
+    if (!response.ok)
+      throw new Error(
+        "Erreur lors de la récupération des compétitions archivées",
+      );
 
-    const data: ArchivedCompetition[] = await response.json()
+    const data: ArchivedCompetition[] = await response.json();
     archivedCompetitions.value = data.sort((a, b) => {
-      const [d1, m1, y1] = a.date_to.split('/')
-      const [d2, m2, y2] = b.date_to.split('/')
-      return new Date(`${y2}-${m2}-${d2}`).getTime() - new Date(`${y1}-${m1}-${d1}`).getTime()
-    })
+      const [d1, m1, y1] = a.date_to.split("/");
+      const [d2, m2, y2] = b.date_to.split("/");
+      return (
+        new Date(`${y2}-${m2}-${d2}`).getTime() -
+        new Date(`${y1}-${m1}-${d1}`).getTime()
+      );
+    });
   } catch (error) {
-    console.error(error)
+    console.error(error);
+  } finally {
+    isLoading.value = false;
   }
-}
+};
 
 onMounted(() => {
-  window.addEventListener('resize', checkMobile)
-  fetchArchivedCompetitions()
-})
-onUnmounted(() => window.removeEventListener('resize', checkMobile))
+  window.addEventListener("resize", checkMobile);
+  fetchArchivedCompetitions();
+});
+onUnmounted(() => window.removeEventListener("resize", checkMobile));
 </script>
 
 <style scoped>
@@ -176,9 +195,38 @@ onUnmounted(() => window.removeEventListener('resize', checkMobile))
   text-align: center;
   animation: fadeInUp 0.5s ease both;
 }
-.empty-icon  { font-size: 2.5rem; margin-bottom: 1rem; }
-.empty-title { font-size: 1.1rem; font-weight: 600; color: #1e3461; margin-bottom: 0.5rem; }
-.empty-sub   { color: #718096; font-size: 0.9rem; }
+.empty-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+.empty-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e3461;
+  margin-bottom: 0.5rem;
+}
+.empty-sub {
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+/* ── LOADING ── */
+.loading-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.skeleton-card {
+  height: 68px;
+  background: linear-gradient(90deg, #f0f4ff 25%, #e2e8f0 50%, #f0f4ff 75%);
+  background-size: 200% 100%;
+  border-radius: 14px;
+  animation: shimmer 1.4s ease infinite, fadeInUp 0.4s ease calc(var(--i, 0) * 0.06s) both;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
 
 /* ── ACCORDION CARD ── */
 .comp-card {
@@ -275,7 +323,13 @@ onUnmounted(() => window.removeEventListener('resize', checkMobile))
 
 /* ── ANIMATION ── */
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

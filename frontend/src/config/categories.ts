@@ -1,10 +1,4 @@
-export type Gender = 'men' | 'women'
-
-export interface Category {
-  weightId: number
-  gender: Gender
-  label: string
-}
+import type { Category } from '@/types'
 
 export const CATEGORIES: Record<number, Category> = {
   1:  { weightId: 1,  gender: 'men',   label: 'Hommes -60kg'  },
