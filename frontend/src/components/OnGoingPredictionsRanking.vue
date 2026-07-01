@@ -103,7 +103,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { CATEGORIES } from '@/config/categories'
 import { COMPETITION_FORMATS } from '@/config/competitionFormats'
 import { currentCompetition } from '@/config/currentCompetition'
-import type { Competitor, LeaderboardEntry, User, UserPrediction, RawPrediction } from '@/types'
+import type { Competitor, LeaderboardEntry, User } from '@/types'
 
 // ── Props ─────────────────────────────────────────────────────────────────
 const props = defineProps<{
