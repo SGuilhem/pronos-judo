@@ -22,8 +22,10 @@
 
       <!-- Logo -->
       <div class="logo-section">
-        <img src="/InterbudoLogo.png" class="logo" alt="Interbudo" />
-      </div>
+    <RouterLink to="/" aria-label="Accueil" @click="closeMenu">
+      <img src="/InterbudoLogo.png" class="logo" alt="Interbudo" />
+    </RouterLink>
+  </div>
 
       <!-- Connecté -->
       <template v-if="userLogged">
