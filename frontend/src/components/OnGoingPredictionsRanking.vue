@@ -8,7 +8,7 @@
         <h1 class="hero-title">{{ competitionName }}</h1>
 
         <div v-if="countDown > 0" class="countdown-badge">
-          <span class="countdown-label">Début dans</span>
+          <span class="countdown-label">Début dans:</span>
           <span class="countdown-value">J-{{ countDown }}</span>
         </div>
 
@@ -62,7 +62,7 @@
               <div class="podium-points">{{ leaderboard[1].points }} pts</div>
             </div>
             <!-- 1er au centre (surélevé) -->
-            <div class="podium-card gold" style="--i:0">
+            <div v-if="leaderboard[0]" class="podium-card gold" style="--i:0">
               <div class="medal">🥇</div>
               <div class="podium-rank">1er</div>
               <div class="podium-username">{{ leaderboard[0].username }}</div>
@@ -363,6 +363,9 @@ onUnmounted(() => window.removeEventListener('resize', checkMobile))
   border-radius: 14px;
   padding: 0.75rem 2.5rem;
   margin-bottom: 1.5rem;
+  @media screen and (min-width: 1024px) {
+    flex-direction: row;
+  }
 }
 .countdown-label {
   font-size: 0.7rem;
@@ -373,6 +376,10 @@ onUnmounted(() => window.removeEventListener('resize', checkMobile))
 .countdown-value {
   font-size: 1.8rem;
   font-weight: 800;
+  @media screen and (min-width: 1024px) {
+    font-size: 1rem;
+    margin-left: 0.5rem;
+  }
 }
 
 /* Day info pill */
@@ -385,6 +392,9 @@ onUnmounted(() => window.removeEventListener('resize', checkMobile))
   border-radius: 999px;
   padding: 0.5rem 1.25rem;
   font-size: 0.9rem;
+  @media screen and (min-width: 1024px) {
+    margin-left: 1rem;
+  }
 }
 .day-badge {
   background: rgba(45, 80, 142, 0.08);

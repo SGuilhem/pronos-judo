@@ -35,6 +35,7 @@ const route = useRoute()
 const currentRouteName = computed(() => route.name as string ?? '')
 
 const sharedProps = computed(() => ({
+  competitionId:          currentCompetition.id,
   competitionName:        competitionName.value,
   startingDay:            startingDay.value,
   endingDay:              endingDay.value,
@@ -63,6 +64,7 @@ const fetchCompetitionInfos = async (): Promise<void> => {
     endingDay.value            = data?.date_to    ?? null
     formattedStartingDay.value = formatDate(data?.date_from)
     formattedEndingDay.value   = formatDate(data?.date_to)
+
   } catch (err) {
     console.error('Erreur fetchCompetitionInfos:', err)
     competitionName.value = 'Erreur lors du chargement'

@@ -13,6 +13,8 @@ export default defineConfig({
     __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false,
   },
   server: {
+    port: 5173,
+    strictPort: true,
     proxy: {
       '/api': {
         target: 'https://data.ijf.org',
