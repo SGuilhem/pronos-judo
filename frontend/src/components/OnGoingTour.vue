@@ -357,6 +357,10 @@ const selectDay = async (day: number) => {
     await loadCompetitorsData(day);
     return;
   }
+  if (!isValidForm.value || !hasActiveCategories.value) {
+    await loadCompetitorsData(day)
+    return
+  }
   try {
     const response = await fetch(`${API_URL}/api/predictions`, {
       method: predictionSubmitted.value ? "PUT" : "POST",
