@@ -5,7 +5,6 @@ const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
 
 exports.register = async (req, res) => {
-  console.log("Requête d'inscription reçue :", req.body);
   const { username, email, password } = req.body;
 
   const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}$/;
@@ -86,12 +85,9 @@ exports.verifyToken = (req, res) => {
   };
 
 exports.requestPasswordReset = async (req, res) => {
-  console.log('reset demandé pour:', req.body.email)
   const { email } = req.body
   try {
-    console.log('avant findOne')
     const user = await User.findOne({ email })
-    console.log('après findOne:', user?.email)
       if (!user) {
         return res.status(404).json({ message: "Utilisateur non trouvé." });
       }
@@ -116,13 +112,11 @@ exports.requestPasswordReset = async (req, res) => {
       Merci,
       L'équipe Pronos Judo
     `;
-      console.log('avant sendEmail')
       await sendEmail({
         to: user.email,
         subject: "Pronos-Judo: Réinitialisation de mot de passe",
         text: message,
       });
-      console.log('après sendEmail')
       res.status(200).json({ message: "Email de réinitialisation envoyé." });
     } catch (err) {
       console.error(err);
