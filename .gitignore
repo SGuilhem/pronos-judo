@@ -22,4 +22,5 @@ pnpm-debug.log*
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
+*.sw?backend/.env
+backend/.env.production

@@ -236,7 +236,6 @@ const register = async () => {
 };
 
 const requestPasswordReset = async () => {
-console.log("Requesting password reset for email:", email.value);
   try {
     await axios.post("/api/auth/request-password-reset", {
       email: email.value,
