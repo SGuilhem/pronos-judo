@@ -658,7 +658,7 @@ onUnmounted(() => window.removeEventListener("resize", checkMobile));
 .place-label {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #64748b;
+  color: #1e293b;
   white-space: nowrap;
   width: 95px;
   flex-shrink: 0;

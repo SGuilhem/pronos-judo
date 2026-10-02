@@ -1,6 +1,6 @@
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 require('./models/User');
 require('./models/Pronostic');
-require('dotenv').config();
 
 const path = require("path");
 const express = require('express');
@@ -28,6 +28,7 @@ app.use(cors({
   origin: [
     'http://localhost:8080',   // Vue CLI (ancien)
     'http://localhost:5173',   // Vite (nouveau)
+    'http://localhost:5174', 
     'https://pronos-judo.onrender.com', // Production
   ],
   credentials: true

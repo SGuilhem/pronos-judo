@@ -1,1 +1,2 @@
-public/
+public/.env
+.env.production

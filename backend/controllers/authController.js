@@ -5,7 +5,15 @@ const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
 
 exports.register = async (req, res) => {
+  console.log("Requête d'inscription reçue :", req.body);
   const { username, email, password } = req.body;
+
+  const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}$/;
+  if (!passwordRegex.test(password)) {
+    return res.status(400).json({
+      message: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, un chiffre et un symbole."
+    });
+  }
 
   try {
     const existingUser = await User.findOne({ email });
@@ -14,13 +22,7 @@ exports.register = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = new User({
-      username,
-      email,
-      password: hashedPassword,
-    });
-
+    const newUser = new User({ username, email, password: hashedPassword });
     await newUser.save();
 
     const token = jwt.sign(
@@ -32,11 +34,7 @@ exports.register = async (req, res) => {
     res.status(201).json({
       message: "Utilisateur créé avec succès",
       token,
-      user: {
-        id: newUser._id,
-        username: newUser.username,
-        email: newUser.email,
-      },
+      user: { id: newUser._id, username: newUser.username, email: newUser.email },
     });
   } catch (err) {
     console.error("Erreur lors de l'inscription :", err);
@@ -69,18 +67,6 @@ exports.login = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erreur interne du serveur" });
-  }
-};
-
-exports.register = async (req, res) => {
-  const { username, email, password } = req.body;
-
-  // Validation mot de passe
-  const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}$/;
-  if (!passwordRegex.test(password)) {
-    return res.status(400).json({
-      message: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, un chiffre et un symbole."
-    });
   }
 };
 
