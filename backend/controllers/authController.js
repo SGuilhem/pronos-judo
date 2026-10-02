@@ -85,11 +85,13 @@ exports.verifyToken = (req, res) => {
     }
   };
 
-  exports.requestPasswordReset = async (req, res) => {
-    const { email } = req.body;
-  
-    try {
-      const user = await User.findOne({ email });
+exports.requestPasswordReset = async (req, res) => {
+  console.log('reset demandé pour:', req.body.email)
+  const { email } = req.body
+  try {
+    console.log('avant findOne')
+    const user = await User.findOne({ email })
+    console.log('après findOne:', user?.email)
       if (!user) {
         return res.status(404).json({ message: "Utilisateur non trouvé." });
       }
@@ -114,13 +116,13 @@ exports.verifyToken = (req, res) => {
       Merci,
       L'équipe Pronos Judo
     `;
-  
+      console.log('avant sendEmail')
       await sendEmail({
         to: user.email,
         subject: "Pronos-Judo: Réinitialisation de mot de passe",
         text: message,
       });
-  
+      console.log('après sendEmail')
       res.status(200).json({ message: "Email de réinitialisation envoyé." });
     } catch (err) {
       console.error(err);
