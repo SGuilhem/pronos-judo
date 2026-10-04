@@ -96,6 +96,13 @@
             </span>
           </div>
 
+          <div
+            v-if="predictionSubmitted && isActive(category.weightId)"
+            class="already-submitted-banner"
+          >
+            ✅ Pronostic envoyé — modifiable jusqu'à la clôture.
+          </div>
+
           <div class="places-grid">
             <div
               v-for="(label, placeIndex) in PLACE_LABELS"
@@ -321,12 +328,54 @@ const fetchCompetitors = async (weightId: number): Promise<string[]> => {
   if (!categoryData?.persons) return [];
   return Object.values(categoryData.persons as Record<string, Competitor>)
     .sort(
-      (a, b) => (a.ranking_place ?? Infinity) - (b.ranking_place ?? Infinity),
+      (a, b) => (a.wra_place ?? Infinity) - (b.wra_place ?? Infinity),
     )
     .map(
       (p) =>
         `${p.family_name.toUpperCase()} ${p.given_name} (${p.country_short})`,
     );
+};
+
+const fetchExistingPrediction = async (day: number): Promise<void> => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  try {
+    const response = await fetch(
+      `${API_URL}/api/predictions/${currentCompetition.id}/${day}`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+
+    if (response.status === 404) {
+      predictionSubmitted.value = false;
+      return;
+    }
+    if (!response.ok) return;
+
+    const data = await response.json();
+    const existing = data.prediction;
+    if (!existing) return;
+
+    predictionSubmitted.value = true;
+    predictionObject.value = existing;
+
+    const dayFormat = competitionFormat.value.find((d) => d.day === day);
+    if (!dayFormat) return;
+
+    dayFormat.weightIds.forEach((weightId) => {
+      const gender = CATEGORIES[weightId].gender;
+      const prefix = gender === "women" ? "women" : "men";
+      const preds = existing.predictions;
+      predictions.value[weightId].places = [
+        preds[`${prefix}FirstPlace`] ?? "",
+        preds[`${prefix}SecondPlace`] ?? "",
+        preds[`${prefix}ThirdPlace1`] ?? "",
+        preds[`${prefix}ThirdPlace2`] ?? "",
+      ];
+    });
+  } catch (err) {
+    console.error("Erreur fetchExistingPrediction:", err);
+  }
 };
 
 const loadCompetitorsData = async (day: number) => {
@@ -352,41 +401,15 @@ const loadCompetitorsData = async (day: number) => {
 
 const selectDay = async (day: number) => {
   selectedDay.value = day;
-  const token = localStorage.getItem("token");
-  if (!token) {
-    await loadCompetitorsData(day);
-    return;
-  }
-  if (!isValidForm.value || !hasActiveCategories.value) {
-    await loadCompetitorsData(day)
-    return
-  }
-  try {
-    const response = await fetch(`${API_URL}/api/predictions`, {
-      method: predictionSubmitted.value ? "PUT" : "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        predictions: buildPredictionPayload(),
-        competitionDay: day,
-        competitionId: currentCompetition.id,
-        date: new Date().toISOString().split("T")[0],
-      }),
-    });
-    if (response.ok) {
-      const result = await response.json();
-      predictionObject.value = result.prediction;
-      predictionSubmitted.value = true;
-    } else {
-      predictionObject.value = null;
-      predictionSubmitted.value = false;
-    }
-  } catch (err) {
-    console.error("Erreur réseau:", err);
-  }
+  predictionSubmitted.value = false;
+  predictionObject.value = null;
+
   await loadCompetitorsData(day);
+
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  await fetchExistingPrediction(day);
 };
 
 const validatePrediction = async () => {
@@ -739,6 +762,17 @@ onUnmounted(() => window.removeEventListener("resize", checkMobile));
   background: rgba(45, 80, 142, 0.06);
   color: var(--blue);
   border: 1px solid rgba(45, 80, 142, 0.18);
+}
+
+.already-submitted-banner {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  color: #166534;
+  border-radius: 8px;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
 }
 
 /* ── No day hint ────────────────────────────────────────────────────────── */

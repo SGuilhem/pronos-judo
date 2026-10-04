@@ -85,7 +85,7 @@ export interface Competitor {
   family_name:    string
   given_name:     string
   country_short:  string
-  ranking_place?: number
+  wra_place?: number
   place?:         string
   id?:            string
   country?:       string
