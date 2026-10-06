@@ -96,13 +96,6 @@
             </span>
           </div>
 
-          <div
-            v-if="predictionSubmitted && isActive(category.weightId)"
-            class="already-submitted-banner"
-          >
-            ✅ Pronostic envoyé — modifiable jusqu'à la clôture.
-          </div>
-
           <div class="places-grid">
             <div
               v-for="(label, placeIndex) in PLACE_LABELS"
@@ -147,9 +140,9 @@
             v-if="predictionMessage"
             class="message-box"
             :class="{
-              'message-success': predictionSubmitted,
-              'message-error': !predictionSubmitted && !isValidForm,
-              'message-info': !predictionSubmitted && isValidForm,
+              'message-success': predictionSubmitted && !isEditing,
+              'message-error':   !predictionSubmitted && !isValidForm,
+              'message-info':    !predictionSubmitted && isValidForm || isEditing,
             }"
           >
             {{ predictionMessage }}
@@ -165,7 +158,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from "vue";
 import { CATEGORIES } from "@/config/categories";
 import { COMPETITION_FORMATS } from "@/config/competitionFormats";
 import { currentCompetition } from "@/config/currentCompetition";
@@ -201,6 +194,15 @@ const error = ref<string | null>(null);
 const predictionSubmitted = ref(false);
 const predictionObject = ref<PredictionResult | null>(null);
 const predictions = ref<Record<number, WeightPrediction>>({});
+const isEditing = ref(false)
+const isModified = ref(false)
+const isLoadingPrediction = ref(false)
+
+watch(predictions, () => {
+  if (predictionSubmitted.value && !isLoadingPrediction.value) {
+    isEditing.value = true
+  }
+}, { deep: true })
 
 // ── Computed ──────────────────────────────────────────────────────────────
 const competitionFormat = computed(
@@ -239,19 +241,20 @@ const isValidForm = computed(() =>
 );
 
 const predictionMessage = computed(() => {
-  if (selectedDay.value === null) return "";
-  const hasActive = selectedDayCategories.value.some((cat) =>
-    isActive(cat.weightId),
-  );
-  if (predictionSubmitted.value && hasActive)
-    return "Vous pouvez modifier votre pronostic tant que la catégorie est active.";
-  if (predictionSubmitted.value) return "Pronostic déjà effectué pour ce jour.";
+  if (selectedDay.value === null) return ""
+  const hasActive = selectedDayCategories.value.some(cat => isActive(cat.weightId))
+  if (!hasActive) return ""
+
+  if (predictionSubmitted.value && !isEditing.value)
+    return isModified.value
+      ? "Pronos modifiés — modifiable tant que la catégorie est active."
+      : "Pronostic déjà enregistré — modifiez un choix pour le mettre à jour."
   if (!isValidForm.value)
-    return "Veuillez remplir tous les champs pour valider votre pronostic.";
+    return "Veuillez remplir tous les champs pour valider votre pronostic."
   if (!hasActiveCategories.value)
-    return "Les pronostics ne sont pas encore ouverts pour cette catégorie.";
-  return "Vous pouvez soumettre votre pronostic.";
-});
+    return "Les pronostics ne sont pas encore ouverts pour cette catégorie."
+  return "Vous pouvez soumettre votre pronostic."
+})
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 const checkMobile = () => {
@@ -286,6 +289,7 @@ const isActive = (weightId: number): boolean => {
 };
 
 const isCategoryPredicted = (weightId: number): boolean => {
+  if (isEditing.value) return false
   const preds = predictionObject.value?.predictions;
   if (!preds) return false;
   return CATEGORIES[weightId].gender === "women"
@@ -362,6 +366,7 @@ const fetchExistingPrediction = async (day: number): Promise<void> => {
     const dayFormat = competitionFormat.value.find((d) => d.day === day);
     if (!dayFormat) return;
 
+    isLoadingPrediction.value = true
     dayFormat.weightIds.forEach((weightId) => {
       const gender = CATEGORIES[weightId].gender;
       const prefix = gender === "women" ? "women" : "men";
@@ -373,6 +378,8 @@ const fetchExistingPrediction = async (day: number): Promise<void> => {
         preds[`${prefix}ThirdPlace2`] ?? "",
       ];
     });
+    await nextTick()
+isLoadingPrediction.value = false
   } catch (err) {
     console.error("Erreur fetchExistingPrediction:", err);
   }
@@ -403,6 +410,8 @@ const selectDay = async (day: number) => {
   selectedDay.value = day;
   predictionSubmitted.value = false;
   predictionObject.value = null;
+  isEditing.value = false
+  isModified.value = false 
 
   await loadCompetitorsData(day);
 
@@ -431,6 +440,8 @@ const validatePrediction = async () => {
     });
     if (response.ok) {
       predictionSubmitted.value = true;
+      isEditing.value = false
+      isModified.value = true 
     } else {
       console.warn("Erreur backend:", await response.text());
     }
@@ -438,6 +449,7 @@ const validatePrediction = async () => {
     console.error("Erreur réseau:", err);
   }
 };
+
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────
 onMounted(() => {
@@ -762,17 +774,6 @@ onUnmounted(() => window.removeEventListener("resize", checkMobile));
   background: rgba(45, 80, 142, 0.06);
   color: var(--blue);
   border: 1px solid rgba(45, 80, 142, 0.18);
-}
-
-.already-submitted-banner {
-  background: #f0fdf4;
-  border: 1px solid #86efac;
-  color: #166534;
-  border-radius: 8px;
-  padding: 0.5rem 0.9rem;
-  font-size: 0.82rem;
-  font-weight: 500;
-  margin-bottom: 0.75rem;
 }
 
 /* ── No day hint ────────────────────────────────────────────────────────── */

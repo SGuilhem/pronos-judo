@@ -116,22 +116,6 @@ router.put('/', authenticateToken, async (req, res) => {
       const existing = await Prediction.findOne({ userId, competitionId, competitionDay });
   
       if (existing) {
-        return res.status(200).json({ message: 'Prédiction déjà effectuée.', prediction: existing });
-      }
-      res.status(404).json({ message: 'Aucune prédiction trouvée.' });
-    } catch (err) {
-      console.error("Erreur lors de la recherche de prédiction :", err);
-      res.status(500).json({ message: 'Erreur serveur' });
-    }
-  });router.get('/:competitionId/:competitionDay', authenticateToken, async (req, res) => {
-    const competitionId = req.params.competitionId;
-    const competitionDay = parseInt(req.params.competitionDay, 10);
-    const userId = req.user.userId;
-  
-    try {
-      const existing = await Prediction.findOne({ userId, competitionId, competitionDay });
-  
-      if (existing) {
         existing.predictions = normalizePredictions(existing.predictions);
         return res.status(200).json({ message: 'Prédiction déjà effectuée.', prediction: existing });
       }

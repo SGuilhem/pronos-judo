@@ -215,7 +215,7 @@ const closedDays = computed(() => {
   return competitionFormat.value.filter(dayFormat => {
     const fightDate = new Date(props.startingDay)
     fightDate.setDate(fightDate.getDate() + dayFormat.day - 1)
-    fightDate.setHours(currentCompetition.fightStartHour, 0, 0, 0)
+    fightDate.setHours(8, 30, 0, 0)
     return new Date() >= fightDate
   })
 })
