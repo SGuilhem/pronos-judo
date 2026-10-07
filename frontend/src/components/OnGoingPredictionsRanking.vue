@@ -142,26 +142,94 @@
           >
             <div class="pred-category-header">{{ category.label }}</div>
             <div class="pred-table-scroll">
-            <table class="pred-table">
-              <thead>
-                <tr>
-                  <th>Participant</th>
-                  <th>1er</th>
-                  <th>2ème</th>
-                  <th>3ème</th>
-                  <th>3ème</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="row in category.rows" :key="row.username">
-                  <td class="pred-username">{{ row.username }}</td>
-                  <td>{{ row.firstPlace }}</td>
-                  <td>{{ row.secondPlace }}</td>
-                  <td>{{ row.thirdPlace1 }}</td>
-                  <td>{{ row.thirdPlace2 }}</td>
-                </tr>
-              </tbody>
-            </table>
+              <table class="pred-table">
+                <thead>
+                  <tr>
+                    <th>Participant</th>
+                    <th>1er</th>
+                    <th>2ème</th>
+                    <th>3ème</th>
+                    <th>3ème</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="row in category.rows" :key="row.username">
+                    <td class="pred-username">{{ row.username }}</td>
+                    <td
+                      :class="{
+                        'cell-score-3':
+                          getCellScore(
+                            row.firstPlace,
+                            category.label,
+                            'first',
+                          ) === 3,
+                        'cell-score-1':
+                          getCellScore(
+                            row.firstPlace,
+                            category.label,
+                            'first',
+                          ) === 1,
+                      }"
+                    >
+                      {{ row.firstPlace }}
+                    </td>
+                    <td
+                      :class="{
+                        'cell-score-3':
+                          getCellScore(
+                            row.secondPlace,
+                            category.label,
+                            'second',
+                          ) === 3,
+                        'cell-score-1':
+                          getCellScore(
+                            row.secondPlace,
+                            category.label,
+                            'second',
+                          ) === 1,
+                      }"
+                    >
+                      {{ row.secondPlace }}
+                    </td>
+                    <td
+                      :class="{
+                        'cell-score-3':
+                          getCellScore(
+                            row.thirdPlace1,
+                            category.label,
+                            'third',
+                          ) === 3,
+                        'cell-score-1':
+                          getCellScore(
+                            row.thirdPlace1,
+                            category.label,
+                            'third',
+                          ) === 1,
+                      }"
+                    >
+                      {{ row.thirdPlace1 }}
+                    </td>
+                    <td
+                      :class="{
+                        'cell-score-3':
+                          getCellScore(
+                            row.thirdPlace2,
+                            category.label,
+                            'third',
+                          ) === 3,
+                        'cell-score-1':
+                          getCellScore(
+                            row.thirdPlace2,
+                            category.label,
+                            'third',
+                          ) === 1,
+                      }"
+                    >
+                      {{ row.thirdPlace2 }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -208,42 +276,44 @@ const currentDayFormat = computed(() =>
     : null,
 );
 
-const selectedPredictionDay = ref<number | null>(null)
+const selectedPredictionDay = ref<number | null>(null);
 
 const closedDays = computed(() => {
-  if (!props.startingDay) return []
-  return competitionFormat.value.filter(dayFormat => {
-    const fightDate = new Date(props.startingDay)
-    fightDate.setDate(fightDate.getDate() + dayFormat.day - 1)
-    fightDate.setHours(8, 30, 0, 0)
-    return new Date() >= fightDate
-  })
-})
+  if (!props.startingDay) return [];
+  return competitionFormat.value.filter((dayFormat) => {
+    const fightDate = new Date(props.startingDay);
+    fightDate.setDate(fightDate.getDate() + dayFormat.day - 1);
+    fightDate.setHours(8, 30, 0, 0);
+    return new Date() >= fightDate;
+  });
+});
 
 const predictionsByDayAndCategory = computed(() => {
-  if (selectedPredictionDay.value === null) return []
-  const dayFormat = competitionFormat.value.find(d => d.day === selectedPredictionDay.value)
-  if (!dayFormat) return []
+  if (selectedPredictionDay.value === null) return [];
+  const dayFormat = competitionFormat.value.find(
+    (d) => d.day === selectedPredictionDay.value,
+  );
+  if (!dayFormat) return [];
 
-  return dayFormat.weightIds.map(weightId => {
-    const cat = CATEGORIES[weightId]
+  return dayFormat.weightIds.map((weightId) => {
+    const cat = CATEGORIES[weightId];
     const rows = users.value
-      .filter(u => {
-        const pred = u.predictions.find(p => p.event === cat.label)
-        return pred !== undefined
+      .filter((u) => {
+        const pred = u.predictions.find((p) => p.event === cat.label);
+        return pred !== undefined;
       })
-      .map(u => {
-        const pred = u.predictions.find(p => p.event === cat.label)!
+      .map((u) => {
+        const pred = u.predictions.find((p) => p.event === cat.label)!;
         return {
-          username:    u.username,
-          firstPlace:  pred.firstPlace  || '—',
-          secondPlace: pred.secondPlace || '—',
-          thirdPlace1: pred.thirdPlace1 || '—',
-          thirdPlace2: pred.thirdPlace2 || '—',
-        }
-      })
-    return { label: cat.label, rows }
-  })
+          username: u.username,
+          firstPlace: pred.firstPlace || "—",
+          secondPlace: pred.secondPlace || "—",
+          thirdPlace1: pred.thirdPlace1 || "—",
+          thirdPlace2: pred.thirdPlace2 || "—",
+        };
+      });
+    return { label: cat.label, rows };
+  });
 });
 
 // ── Helpers ───────────────────────────────────────────────────────────────
@@ -455,6 +525,58 @@ const archiveLeaderboard = async (): Promise<void> => {
   }
 };
 
+const getCellScore = (
+  predictedName: string,
+  categoryLabel: string,
+  position: "first" | "second" | "third",
+): 0 | 1 | 3 => {
+  if (!predictedName || predictedName === "—") return 0;
+  const eventResults = results.value[categoryLabel];
+  if (!eventResults) return 0;
+
+  const normalize = (name: string) =>
+    name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s*\(.*?\)\s*/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const predicted = normalize(predictedName);
+  const actual = {
+    first: normalize(
+      `${eventResults.find((c) => c.place === "1")?.family_name ?? ""} ${
+        eventResults.find((c) => c.place === "1")?.given_name ?? ""
+      }`,
+    ),
+    second: normalize(
+      `${eventResults.find((c) => c.place === "2")?.family_name ?? ""} ${
+        eventResults.find((c) => c.place === "2")?.given_name ?? ""
+      }`,
+    ),
+    thirds: eventResults
+      .filter((c) => c.place === "3")
+      .map((c) => normalize(`${c.family_name} ${c.given_name}`)),
+  };
+
+  if (position === "first") {
+    if (predicted === actual.first) return 3;
+    if (predicted === actual.second || actual.thirds.includes(predicted))
+      return 1;
+  }
+  if (position === "second") {
+    if (predicted === actual.second) return 3;
+    if (predicted === actual.first || actual.thirds.includes(predicted))
+      return 1;
+  }
+  if (position === "third") {
+    if (actual.thirds.includes(predicted)) return 3;
+    if (predicted === actual.first || predicted === actual.second) return 1;
+  }
+  return 0;
+};
+
 // ── Lifecycle ─────────────────────────────────────────────────────────────
 onMounted(async () => {
   window.addEventListener("resize", checkMobile);
@@ -465,7 +587,7 @@ onMounted(async () => {
   await archiveLeaderboard();
   isLoading.value = false;
   if (closedDays.value.length > 0) {
-    selectedPredictionDay.value = closedDays.value[0].day
+    selectedPredictionDay.value = closedDays.value[0].day;
   }
 });
 
@@ -801,7 +923,7 @@ onUnmounted(() => window.removeEventListener("resize", checkMobile));
 }
 .pred-table td {
   padding: 0.7rem 1rem;
-  border-bottom: 1px solid #f8fafc;
+  border: 1px solid #f8fafc;
   color: #4a5568;
 }
 .pred-table tr:last-child td {
@@ -838,6 +960,17 @@ onUnmounted(() => window.removeEventListener("resize", checkMobile));
   .pred-table td {
     padding: 0.5rem 0.6rem;
   }
+}
+
+.cell-score-3 {
+  background: #D4EDDA;
+  color: #166534;
+  font-weight: 600;
+}
+.cell-score-1 {
+  background: #FCE5CD;
+  color: #92400e;
+  font-weight: 600;
 }
 
 /* ── ANIMATION ── */
